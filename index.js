@@ -164,7 +164,7 @@ addrsr={
         input=addrsr.cleanString(input.replace(placeName,','));
       }
     } catch(er){
-      console.warn('Error parsing place stuff',er.message,input)
+      console.warn('Error parsing place stuff',er.message,'at line',er.line || er.lineNumber,input)
     }
     
     try{
@@ -175,7 +175,7 @@ addrsr={
         placeName=addrsr.cleanString(walmart[0])+(placeName?', '+placeName:'');
       }
     } catch(er){
-      console.warn('Error parsing walmart stuff',er.message,input)
+      console.warn('Error parsing walmart stuff',er.message,'at line',er.line || er.lineNumber,input)
     }
     input=addrsr.cleanString(input);
 
@@ -183,20 +183,22 @@ addrsr={
       //match any part of address before the 1st number
       // "New York Center for Infants and Toddlers, Inc.,2336 Andrews Ave, 2nd Floor, Bronx, 10468, US"
       // The 2 1st parts are the "place" name, strip it.
-      var rsp=input.split(','),
-      rfp=rsp[0].trim(),rpn='';
-      if(!rfp.match(/[0-9]/)){
-        console.warn('First part of address has no numbers',rfp)
-        while(!rsp[0].trim().match(/[0-9]/)){
-          rpn+=rsp[0].trim()+' ';
-          rsp.shift();
+      var rsp=input.split(',');
+      if(rsp[0] && rsp[0].trim()){
+        var rfp=rsp[0].trim(),rpn='';
+        if(!rfp.match(/[0-9]/)){
+          console.warn('First part of address has no numbers',rfp)
+          while(rsp && rsp[0] && rsp[0].trim() && !rsp[0].trim().match(/[0-9]/)){
+            rpn+=rsp[0].trim()+' ';
+            rsp.shift();
+          }
+          placeName=addrsr.cleanString(rpn)+(placeName?', '+placeName:'');
+          input=addrsr.cleanString(rsp.join(', '));
         }
-        placeName=addrsr.cleanString(rpn)+(placeName?', '+placeName:'');
-        input=addrsr.cleanString(rsp.join(', '));
       }
     }
     catch(er){
-      console.warn('input "'+input+'" could not find placeName',er.message);
+      console.warn('input "'+input+'" could not find placeName',er.message,'at line',er.line || er.lineNumber);
     }
     return {
       place     : toTitleCase(placeName),
