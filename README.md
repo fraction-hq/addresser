@@ -5,7 +5,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
 
 ## Installation
 
-    npm install addresser
+    npm install git+https://github.com/technosolutionscl/addresser
 
 ## Usage
 
@@ -19,7 +19,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
       zipCode: '07079',
       stateAbbreviation: 'NJ',
       stateName: 'New Jersey',
-      placeName: 'South Orange',
+      city: 'South Orange',
       addressLine1: '400 South Orange Ave',
       streetNumber: '400',
       streetSuffix: 'Ave',
@@ -34,7 +34,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
       streetSuffix: 'St',
       streetName: 'Double Space',
       addressLine1: '123 Double Space St',
-      placeName: 'Conway',
+      city: 'Conway',
       stateAbbreviation: 'SC',
       stateName: 'South Carolina',
       zipCode: '29526' }
@@ -48,7 +48,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
       streetSuffix: 'St',
       streetName: 'Main',
       addressLine1: '123 Main St',
-      placeName: 'Conway',
+      city: 'Conway',
       stateAbbreviation: 'SC',
       stateName: 'South Carolina',
       zipCode: '29526',
@@ -63,7 +63,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
       zipCode: '29203',
       stateAbbreviation: 'SC',
       stateName: 'South Carolina',
-      placeName: 'Columbia',
+      city: 'Columbia',
       addressLine1: '1301 Columbia College Dr',
       addressLine2: 'Unit 101',
       streetNumber: '1301',
@@ -77,7 +77,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
       zipCode: '98102',
       stateAbbreviation: 'WA',
       stateName: 'Washington',
-      placeName: 'Seattle',
+      city: 'Seattle',
       addressLine1: '300 Boylston Ave E',
       streetDirection: 'E',
       streetNumber: '300',
@@ -91,7 +91,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
       zipCode: '98102',
       stateAbbreviation: 'WA',
       stateName: 'Washington',
-      placeName: 'Seattle',
+      city: 'Seattle',
       addressLine1: 'PO BOX 333' }
 
     // Return a random valid city 
