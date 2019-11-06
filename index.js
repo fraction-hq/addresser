@@ -20,6 +20,7 @@ function getKeyByValue(object, value) {
 }
 
 function toTitleCase(str) {
+  if(!str) return str;
 	return str.replace(/\w\S*/g, function(txt) {
 		return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
 	});
@@ -63,17 +64,18 @@ canPostalCodeFirst = {
 },
 usZipCodesByState = require('./data/us-zipcodes-by-state.json'),
 usLine2Prefixes = {
-	'APARTMENT'    : 'APT',
+  'APARTMENT'    : 'APT',
+  'APP'          : 'APT', // french for apt
 	'APT'          : 'APT',
 	'BASEMENT'     : 'BSMT',
 	'BSMT'         : 'BSMT',
 	'BLDG'         : 'BLDG',
 	'BUILDING'     : 'BLDG',
-	'BUREAU'       : 'BUR',
+	'BUREAU'       : 'BUR', //french for office
 	'DEPARTMENT'   : 'DEPT',
 	'DEPT'         : 'DEPT',
-	'ETAGE'		   : 'ETAGE',
-	'ÉTAGE'		   : 'ÉTAGE',
+	'ETAGE'		     : 'FL', //french for Floor
+	'ÉTAGE'		     : 'FL',
 	'FL'           : 'FL',
 	'FLOOR'        : 'FL',
 	'FRNT'         : 'FRNT',
@@ -82,7 +84,7 @@ usLine2Prefixes = {
 	'HNGR'         : 'HNGR',
 	'LBBY'         : 'LBBY',
 	'LOBBY'        : 'LBBY',
-	'LOCAL'        : 'LOCAL',
+	'LOCAL'        : 'RM', // french for room
 	'LOT'          : 'LOT',
 	'LOWER'        : 'LOWR',
 	'LOWR'         : 'LOWER',
@@ -108,9 +110,99 @@ usLine2Prefixes = {
 	'UNIT'         : 'UNIT',
 	'UPPER'        : 'UPPR',
 	'UPPR'         : 'UPPR',
-	'#'			   : '#',
+	'#'			       : '#',
 },
 addrsr={
+  cleanString:function(input){
+    if(!input || typeof input=='boolean') return input;
+    if(typeof input=='object'){
+      for(let x in input){
+        if(input[x]) input[x]=addrsr.cleanString(input[x]);
+      }
+      return input;
+    }
+    if(typeof input!='string') return input;
+
+    let _doTrim=function(a){ //some lazyness
+      a=a.replace(/\s+/g,' ').trim();
+      for(let i=0;i<3;i++)
+        a=a.replace(/\s+\,/g,',').trim().replace(/\,+/g,',').trim().replace(/\,+$/,'').trim().replace(/^\,+/,'').trim();
+      return a.replace(/\s+/g,' ').trim();
+    };
+    input=_doTrim(input.trim().replace(/\\n/g,', ').replace(/\n/g,', '));
+    
+    let _toReplace=[
+      ['\n', ', '],
+      [', ,', ','],
+      ['u00f4', 'ô'],
+      ['u00e7', 'ç'],
+      ['u00e8', 'è'],
+      ['u00e9', 'é'],
+      ['u00e0','à'],
+      ['ÃƒÂ¨', 'é']
+    ];
+    for(let i=0;i<_toReplace.length;i++){
+      while(input.indexOf(_toReplace[i][0])!=-1) input=input.replace(_toReplace[i][0],_toReplace[i][1]);
+    }
+    var output = "";
+    for (var i=0; i<input.length; i++) {
+      if (input.charCodeAt(i) <= 127 || input.charCodeAt(i) >= 160 && input.charCodeAt(i) <= 255) {
+        output += input.charAt(i);
+      }
+    }
+    return _doTrim(output.trim());
+  },
+  getPlaceInfo:function(input){
+    //The best example I could get for that function is:
+    // "120 Columbus Drive, Conception Square, Walmart Carbonear Store 3015, Carbonear, Newfoundland and Labrador A1Y 1B3, Canada"
+    var placeName='';
+    try{
+      //match "WhateverPlaceName Square or ThatCity convention center"
+      let _placeOrCenter=input.match(/(^|\,)[a-zA-Z\-\s]+ (Square|Place|Plaza|Center)(\s|)(\,|$)/i);
+      if(_placeOrCenter){
+        placeName=addrsr.cleanString(_placeOrCenter[0]);
+        input=addrsr.cleanString(input.replace(placeName,','));
+      }
+    } catch(er){
+      console.warn('Error parsing place stuff',er.message,input)
+    }
+    
+    try{
+      //match "Walmart City Name Supercentre 1234"
+      let walmart=input.match(/(^|\,)(\s|)Walmart [a-zA-Z\-\s]+ (Supercentre|Store) [\d]+\,/i);
+      if(walmart){
+        input=addrsr.cleanString(input.replace(addrsr.cleanString(walmart[0]),','));
+        placeName=addrsr.cleanString(walmart[0])+(placeName?', '+placeName:'');
+      }
+    } catch(er){
+      console.warn('Error parsing walmart stuff',er.message,input)
+    }
+    input=addrsr.cleanString(input);
+
+    try{
+      //match any part of address before the 1st number
+      // "New York Center for Infants and Toddlers, Inc.,2336 Andrews Ave, 2nd Floor, Bronx, 10468, US"
+      // The 2 1st parts are the "place" name, strip it.
+      var rsp=input.split(','),
+      rfp=rsp[0].trim(),rpn='';
+      if(!rfp.match(/[0-9]/)){
+        console.warn('First part of address has no numbers',rfp)
+        while(!rsp[0].trim().match(/[0-9]/)){
+          rpn+=rsp[0].trim()+' ';
+          rsp.shift();
+        }
+        placeName=addrsr.cleanString(rpn)+(placeName?', '+placeName:'');
+        input=addrsr.cleanString(rsp.join(', '));
+      }
+    }
+    catch(er){
+      console.warn('input "'+input+'" could not find placeName',er.message);
+    }
+    return {
+      place     : toTitleCase(placeName),
+      stripped  : input
+    }
+  },
 	/**
 	 * 
 	 * @param {string} a address string
@@ -184,9 +276,14 @@ addrsr={
 			throw 'Argument must be a non-empty string.';
 		}
 		// Deal with any repeated spaces
-		address = address.replace(/  +/g, ' ');
+		address = addrsr.cleanString(address);
 
 		var result = {};
+    var PI=addrsr.getPlaceInfo(address);
+    if(PI.place){
+      address=PI.stripped;
+      result.placeName=PI.place;
+    }
 		var subP=addrsr.getSubPremise(address);
 		if(subP && subP.parsed){
 			result.subPremise=subP.parsed;
@@ -217,8 +314,8 @@ addrsr={
       stateString = stateString.substring(0, stateString.length - 5).trim();
       if(!stateString){
         let _s=addrsr.getStateFromZip(result.zipCode);
-        if(_s && _s.name)
-          stateString=_s.name;
+        if(_s && _s.code)
+          stateString=_s.code;
       }
 		} else if (stateString.match(/\d{5}-\d{4}$/)) {
 			var zipString = stateString.match(/\d{5}-\d{4}$/)[0];
@@ -227,8 +324,8 @@ addrsr={
 			stateString = stateString.substring(0, stateString.length - 10).trim();
       if(!stateString){
         let _s=addrsr.getStateFromZip(result.zipCode);
-        if(_s && _s.name)
-          stateString=_s.name;
+        if(_s && _s.code)
+          stateString=_s.code;
       }
 		} else if (result.countryCode == 'CA' && stateString.match(/[A-Z]\d[A-Z] ?\d[A-Z]\d/)) {
 			result.zipCode = stateString.match(/[A-Z]\d[A-Z] ?\d[A-Z]\d/)[0];
@@ -276,27 +373,27 @@ addrsr={
 		}
 
 		// Parse and remove city/place name
-		var placeString = "";
+		var cityString = "";
 		if (stateString.length > 0) { // Check if anything is left of last section
 			addressParts[addressParts.length - 1] = stateString;
-			placeString = addressParts[addressParts.length - 1];
+			cityString = addressParts[addressParts.length - 1];
 		} else {
 			addressParts.splice(-1, 1);
-			placeString = addressParts[addressParts.length - 1].trim();
+			cityString = addressParts[addressParts.length - 1].trim();
 		}
-		result.placeName = "";
+		result.city = "";
 		allCities[result.stateAbbreviation].some(function(element) {
 			var re = new RegExp(element + "$", "i");
-			if (placeString.match(re)) {
-				placeString = placeString.replace(re, ""); // Carve off the place name
+			if (cityString.match(re)) {
+				cityString = cityString.replace(re, ""); // Carve off the place name
 
-				result.placeName = element;
+				result.city = element;
 				return element; // Found a winner - stop looking for cities
 			}
 		});
-		if (!result.placeName) {
-			result.placeName = toTitleCase(placeString);
-			placeString = "";
+		if (!result.city) {
+			result.city = toTitleCase(cityString);
+			cityString = "";
 		}
 
 		// Parse the street data
@@ -304,8 +401,8 @@ addrsr={
 		var usStreetDirectionalString = Object.keys(usStreetDirectional).map(x => usStreetDirectional[x]).join('|');
 		var usLine2String = Object.keys(usLine2Prefixes).join('|');
 
-		if (placeString.length > 0) { // Check if anything is left of last section
-			addressParts[addressParts.length - 1] = placeString;
+		if (cityString.length > 0) { // Check if anything is left of last section
+			addressParts[addressParts.length - 1] = cityString;
 		} else {
 			addressParts.splice(-1, 1);
 		}
@@ -449,8 +546,8 @@ addrsr={
 		if (result.hasOwnProperty('addressLine2')) {
 			addressString += ', ' + result.addressLine2;
 		}
-		if (addressString && result.hasOwnProperty("placeName") && result.hasOwnProperty("stateAbbreviation") && result.hasOwnProperty("zipCode")) {
-			var idString = (addressString?addressString + ", ":'') + result.placeName + ", " + result.stateAbbreviation + " " + result.zipCode;
+		if (addressString && result.hasOwnProperty("city") && result.hasOwnProperty("stateAbbreviation") && result.hasOwnProperty("zipCode")) {
+			var idString = (addressString?addressString + ", ":'') + result.city + ", " + result.stateAbbreviation + " " + result.zipCode+", "+result.country;
 			result['formattedAddress'] = idString;
 			result['id'] = encodeURI(idString.replace(/ /g, '-').replace(/\#/g, '-').replace(/\//g, '-').replace(/\./g, '-'));
 		}
