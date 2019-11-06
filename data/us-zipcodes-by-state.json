@@ -1,0 +1,489 @@
+{
+    "AL": {
+        "name": "Alabama",
+        "codes": [
+            [
+                35801,
+                35816
+            ]
+        ]
+    },
+    "AK": {
+        "name": "Alaska",
+        "codes": [
+            [
+                99501,
+                99524
+            ]
+        ]
+    },
+    "AZ": {
+        "name": "Arizona",
+        "codes": [
+            [
+                85001,
+                85055
+            ]
+        ]
+    },
+    "AR": {
+        "name": "Arkansas",
+        "codes": [
+            [
+                72201,
+                72217
+            ]
+        ]
+    },
+    "CA": {
+        "name": "California",
+        "codes": [
+            [
+                94203,
+                94209
+            ],
+            [
+                90001,
+                90089
+            ],
+            [
+                90209,
+                90213
+            ]
+        ]
+    },
+    "CO": {
+        "name": "Colorado",
+        "codes": [
+            [
+                80201,
+                80239
+            ]
+        ]
+    },
+    "CT": {
+        "name": "Conneticut",
+        "codes": [
+            [
+                3137,
+                3146
+            ]
+        ]
+    },
+    "DE": {
+        "name": "Deleware",
+        "codes": [
+            [
+                19901,
+                19905
+            ]
+        ]
+    },
+    "DC": {
+        "name": "District of Columbia",
+        "codes": [
+            [
+                20001,
+                20020
+            ]
+        ]
+    },
+    "FL": {
+        "name": "Florida",
+        "codes": [
+            [
+                32501,
+                32509
+            ],
+            [
+                33124,
+                33190
+            ],
+            [
+                32801,
+                32837
+            ]
+        ]
+    },
+    "GA": {
+        "name": "Georgia",
+        "codes": [
+            [
+                30301,
+                30381
+            ]
+        ]
+    },
+    "HI": {
+        "name": "Hawaii",
+        "codes": [
+            [
+                96801,
+                96830
+            ]
+        ]
+    },
+    "ID": {
+        "name": "Idaho",
+        "codes": [
+            [
+                83254,
+                83254
+            ]
+        ]
+    },
+    "IL": {
+        "name": "Illinois",
+        "codes": [
+            [
+                60601,
+                60641
+            ],
+            [
+                62701,
+                62709
+            ]
+        ]
+    },
+    "IN": {
+        "name": "Indiana",
+        "codes": [
+            [
+                46201,
+                46209
+            ]
+        ]
+    },
+    "IA": {
+        "name": "Iowa",
+        "codes": [
+            [
+                52801,
+                52809
+            ],
+            [
+                50301,
+                50323
+            ]
+        ]
+    },
+    "KS": {
+        "name": "Kansas",
+        "codes": [
+            [
+                67201,
+                67221
+            ]
+        ]
+    },
+    "KY": {
+        "name": "Kentucky",
+        "codes": [
+            [
+                41701,
+                41702
+            ]
+        ]
+    },
+    "LA": {
+        "name": "Lousiana",
+        "codes": [
+            [
+                70112,
+                70119
+            ]
+        ]
+    },
+    "ME": {
+        "name": "Maine",
+        "codes": [
+            [
+                2074,
+                2076
+            ]
+        ]
+    },
+    "MD": {
+        "name": "Maryland",
+        "codes": [
+            [
+                21201,
+                21237
+            ]
+        ]
+    },
+    "MA": {
+        "name": "Massachusetts",
+        "codes": [
+            [
+                1089,
+                1119
+            ]
+        ]
+    },
+    "MI": {
+        "name": "Michigan",
+        "codes": [
+            [
+                49036,
+                49036
+            ],
+            [
+                49734,
+                49735
+            ]
+        ]
+    },
+    "MN": {
+        "name": "Minnesota",
+        "codes": [
+            [
+                55801,
+                55808
+            ]
+        ]
+    },
+    "MS": {
+        "name": "Mississippi",
+        "codes": [
+            [
+                39530,
+                39535
+            ]
+        ]
+    },
+    "MO": {
+        "name": "Missouri",
+        "codes": [
+            [
+                63101,
+                63141
+            ]
+        ]
+    },
+    "MT": {
+        "name": "Montana",
+        "codes": [
+            [
+                59044,
+                59044
+            ]
+        ]
+    },
+    "NE": {
+        "name": "Nebraska",
+        "codes": [
+            [
+                68901,
+                68902
+            ]
+        ]
+    },
+    "NV": {
+        "name": "Nevada",
+        "codes": [
+            [
+                89501,
+                89513
+            ]
+        ]
+    },
+    "NH": {
+        "name": "New Hampshire",
+        "codes": [
+            [
+                "03217",
+                "03217"
+            ]
+        ]
+    },
+    "NJ": {
+        "name": "New Jersey",
+        "codes": [
+            [
+                "07039",
+                "07039"
+            ]
+        ]
+    },
+    "NM": {
+        "name": "New Mexico",
+        "codes": [
+            [
+                87500,
+                87506
+            ]
+        ]
+    },
+    "NY": {
+        "name": "New York",
+        "codes": [
+            [
+                10001,
+                10048
+            ]
+        ]
+    },
+    "NC": {
+        "name": "North Carolina",
+        "codes": [
+            [
+                27565,
+                27565
+            ]
+        ]
+    },
+    "ND": {
+        "name": "North Dakota",
+        "codes": [
+            [
+                58282,
+                58282
+            ]
+        ]
+    },
+    "OH": {
+        "name": "Ohio",
+        "codes": [
+            [
+                44101,
+                44179
+            ]
+        ]
+    },
+    "OK": {
+        "name": "Oklahoma",
+        "codes": [
+            [
+                74101,
+                74110
+            ]
+        ]
+    },
+    "OR": {
+        "name": "Oregon",
+        "codes": [
+            [
+                97201,
+                97225
+            ]
+        ]
+    },
+    "PA": {
+        "name": "Pennsylvania",
+        "codes": [
+            [
+                15201,
+                15244
+            ]
+        ]
+    },
+    "RI": {
+        "name": "Rhode Island",
+        "codes": [
+            [
+                "02840",
+                "02841"
+            ]
+        ]
+    },
+    "SC": {
+        "name": "South Carolina",
+        "codes": [
+            [
+                29020,
+                29020
+            ]
+        ]
+    },
+    "SD": {
+        "name": "South Dakota",
+        "codes": [
+            [
+                57401,
+                57402
+            ]
+        ]
+    },
+    "TN": {
+        "name": "Tennessee",
+        "codes": [
+            [
+                37201,
+                37222
+            ]
+        ]
+    },
+    "TX": {
+        "name": "Texas",
+        "codes": [
+            [
+                78701,
+                78705
+            ]
+        ]
+    },
+    "UT": {
+        "name": "Utah",
+        "codes": [
+            [
+                84321,
+                84323
+            ]
+        ]
+    },
+    "VT": {
+        "name": "Vermont",
+        "codes": [
+            [
+                "05751",
+                "05751"
+            ]
+        ]
+    },
+    "VA": {
+        "name": "Virginia",
+        "codes": [
+            [
+                24517,
+                24517
+            ]
+        ]
+    },
+    "WA": {
+        "name": "Washington",
+        "codes": [
+            [
+                98004,
+                98009
+            ]
+        ]
+    },
+    "WV": {
+        "name": "West Virginia",
+        "codes": [
+            [
+                25813,
+                25813
+            ]
+        ]
+    },
+    "WI": {
+        "name": "Wisconsin",
+        "codes": [
+            [
+                53201,
+                53228
+            ]
+        ]
+    },
+    "WY": {
+        "name": "Wyoming",
+        "codes": [
+            [
+                82941,
+                82941
+            ]
+        ]
+    }
+}

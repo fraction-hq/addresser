@@ -61,6 +61,7 @@ canPostalCodeFirst = {
 	X	: 'NT', //	Northwest Territories (NT) and Nunavut (NU)
 	Y	: 'YT', //	Yukon Territory
 },
+usZipCodesByState = require('./data/us-zipcodes-by-state.json'),
 usLine2Prefixes = {
 	'APARTMENT'    : 'APT',
 	'APT'          : 'APT',
@@ -108,9 +109,8 @@ usLine2Prefixes = {
 	'UPPER'        : 'UPPR',
 	'UPPR'         : 'UPPR',
 	'#'			   : '#',
-};
-
-var addrsr={
+},
+addrsr={
 	/**
 	 * 
 	 * @param {string} a address string
@@ -130,7 +130,23 @@ var addrsr={
 			}
 		}
 		return null;
-	},
+  },
+  getStateFromZip:function(zip){
+    var zip=parseInt(zip);
+    var s=Object.keys(usZipCodesByState);
+    for(let i=0;i<s.length;i++){
+      let _s=usZipCodesByState[s[i]];
+      for(let x=0;x<_s.codes.length;x++){
+        if(zip>=_s.codes[x][0] && zip>=_s.codes[x][1]){
+          return {
+            code  : s[i],
+            name  : _s.name
+          };
+        }
+      }
+    }
+    return null;
+  },
 	/**
 	 * 
 	 * @param {string} a address string
@@ -198,12 +214,22 @@ var addrsr={
 		// Parse and remove zip or zip plus 4 from end of string
 		if (stateString.match(/\d{5}$/)) {
 			result.zipCode = stateString.match(/\d{5}$/)[0];
-			stateString = stateString.substring(0, stateString.length - 5).trim();
+      stateString = stateString.substring(0, stateString.length - 5).trim();
+      if(!stateString){
+        let _s=addrsr.getStateFromZip(result.zipCode);
+        if(_s && _s.name)
+          stateString=_s.name;
+      }
 		} else if (stateString.match(/\d{5}-\d{4}$/)) {
 			var zipString = stateString.match(/\d{5}-\d{4}$/)[0];
 			result.zipCode = zipString.substring(0, 5);
 			result.zipCodePlusFour = zipString;
 			stateString = stateString.substring(0, stateString.length - 10).trim();
+      if(!stateString){
+        let _s=addrsr.getStateFromZip(result.zipCode);
+        if(_s && _s.name)
+          stateString=_s.name;
+      }
 		} else if (result.countryCode == 'CA' && stateString.match(/[A-Z]\d[A-Z] ?\d[A-Z]\d/)) {
 			result.zipCode = stateString.match(/[A-Z]\d[A-Z] ?\d[A-Z]\d/)[0];
 			stateString = stateString.substring(0, stateString.length - result.zipCode.length).trim();
@@ -218,12 +244,8 @@ var addrsr={
 			if (!stateString) {
 				stateString = canPostalCodeFirst[result.zipCode.substr(0, 1)];
 			}
-		}
-		// Canadian Postal codes first letter province code fallback
-
-
-
-
+    }
+    
 		// Parse and remove state
 		if (stateString.length > 0) { // Check if anything is left of last section
 			addressParts[addressParts.length - 1] = stateString;
