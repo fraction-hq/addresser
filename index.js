@@ -139,6 +139,8 @@ addrsr={
       ['u00e8', 'è'],
       ['u00e9', 'é'],
       ['u00e0','à'],
+      ['Ã´','ô'],
+      ['Ã©','é'],
       ['ÃƒÂ¨', 'é']
     ];
     for(let i=0;i<_toReplace.length;i++){
@@ -279,7 +281,8 @@ addrsr={
 		}
 		// Deal with any repeated spaces
 		address = addrsr.cleanString(address);
-
+    address=address.replace(/\, Newfoundland ([A-Z]\d[A-Z])/i,', NL $1'); // because partial province name
+    address=address.replace(/\, Bronx (\d{5})/i,', NY $1'); // because Bronx is not a state, ny is
 		var result = {};
     var PI=addrsr.getPlaceInfo(address);
     if(PI.place){
