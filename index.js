@@ -64,7 +64,8 @@ canPostalCodeFirst = {
 },
 usZipCodesByState = require('./data/us-zipcodes-by-state.json'),
 usLine2Prefixes = {
-  'APARTMENT'    : 'APT',
+	'APARTMENT'    : 'APT',
+	'APPARTEMENT'	 : 'APT', // french for apt
   'APP'          : 'APT', // french for apt
 	'APT'          : 'APT',
 	'BASEMENT'     : 'BSMT',
