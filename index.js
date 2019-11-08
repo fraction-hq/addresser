@@ -3,7 +3,7 @@ var usStreetTypes = require('./data/us-street-types.json');
 var allCities = require('./data/cities.json');
 var usStates = require('./data/us-states.json');
 var usCities = require('./data/us-cities.json');
-
+const XRegExp = require('xregexp');
 
 
 'use strict';
@@ -159,20 +159,20 @@ addrsr={
     //The best example I could get for that function is:
     // "120 Columbus Drive, Conception Square, Walmart Carbonear Store 3015, Carbonear, Newfoundland and Labrador A1Y 1B3, Canada"
     var placeName='';
-    try{
-      //match "WhateverPlaceName Square or ThatCity convention center"
-      let _placeOrCenter=input.match(/(^|\,)[a-zA-Z\-\s]+ (Square|Place|Plaza|Center)(\s|)(\,|$)/i);
-      if(_placeOrCenter){
-        placeName=addrsr.cleanString(_placeOrCenter[0]);
-        input=addrsr.cleanString(input.replace(placeName,','));
-      }
-    } catch(er){
-      console.warn('Error parsing place stuff',er.message,'at line',er.line || er.lineNumber,input)
-    }
+    //try{ // some cities have "place" in their name
+    //  //match "WhateverPlaceName Square or ThatCity convention center"
+    //  let _placeOrCenter=input.match(/(^|\,)[^0-9]+ (Square|Plaza|Center)(\s|)(\,|$)/i);
+    //  if(_placeOrCenter){
+    //    placeName=addrsr.cleanString(_placeOrCenter[0]);
+    //    input=addrsr.cleanString(input.replace(placeName,','));
+    //  }
+    //} catch(er){
+    //  console.warn('Error parsing place stuff',er.message,'at line',er.line || er.lineNumber,input)
+    //}
     
     try{
       //match "Walmart City Name Supercentre 1234"
-      let walmart=input.match(/(^|\,)(\s|)Walmart [a-zA-Z\-\s]+ (Supercentre|Store) [\d]+\,/i);
+      let walmart=input.match(/(^|\,)(\s|)Walmart [^0-9]+ (Supercentre|Store) [\d]+\,/i);
       if(walmart){
         input=addrsr.cleanString(input.replace(addrsr.cleanString(walmart[0]),','));
         placeName=addrsr.cleanString(walmart[0])+(placeName?', '+placeName:'');
@@ -195,7 +195,7 @@ addrsr={
             rpn+=rsp[0].trim()+' ';
             rsp.shift();
           }
-          placeName=addrsr.cleanString(rpn)+(placeName?', '+placeName:'');
+					placeName=addrsr.cleanString(rpn)+(placeName?', '+placeName:'');
           input=addrsr.cleanString(rsp.join(', '));
         }
       }
@@ -254,20 +254,20 @@ addrsr={
 	getSubPremise: function(a) {
 		//remove subPremise from original address
 		//return parsed value
-		let _bndr = "(\\b|\\\,)", _apt = [];
+		let _bndr = "(\\b|\\,|\\s)", _apt = [];
 		var _c = [
-			[new RegExp("^RR ([\\d]+) Comp([a-z]+|) ([\\d]+) Site ([\\d]+)" + _bndr, 'i'), ''], //RR 1 Comp 45 Site 19, 32 Willow Hill Est, Sundre, Alberta T0M 1X0, Canada
-			[new RegExp(_bndr + "([\\d]+)(st|nd|rd|th|e|ieme|er|eme) (" + Object.keys(usLine2Prefixes).join('|') + ")" + _bndr, 'i'), ''], // 2nd floor, 3rd floor, 4e étage etc
-			[new RegExp(_bndr + "(" + Object.keys(usLine2Prefixes).join('|') + ")([\\.|\\#|\\s|\\:]+|)([\\d]+|)([a-zA-Z]|)" + _bndr, 'i'), ''], // 580 Hespeler Rd building d, Cambridge, ON N1R 6J8, Canada
-			[new RegExp(" \\#[\\d+]+([a-zA-Z]|)" + _bndr, 'i'), ''], // 9390 Boulevard des Sciences #3A, Anjou, QC H1J 3C7, Canada
-			[new RegExp("^(\\d+)(\\s|)[A-DF-NP-RT-VX-Z]" + _bndr, 'i'), '$1'], //129 B Mitchell Ct, Mitchell, ON N0K 1N0, Canada
-			[new RegExp("^(\\#|)([\\d]+)(\\s|)(\\-|\\,|\\/)(\\s|)", 'i'), ''], //#105 - 19 Everridge Square SW... also fits with or without spaces
+			[XRegExp("^RR ([\\d]+) Comp([a-z]+|) ([\\d]+) Site ([\\d]+)" + _bndr, 'i'), ''], //RR 1 Comp 45 Site 19, 32 Willow Hill Est, Sundre, Alberta T0M 1X0, Canada
+			[XRegExp(_bndr + "([\\d]+)(st|nd|rd|th|e|ieme|er|eme) (" + Object.keys(usLine2Prefixes).join('|') + ")" + _bndr, 'i'), ''], // 2nd floor, 3rd floor, 4e étage etc
+			[XRegExp(_bndr + "(" + Object.keys(usLine2Prefixes).join('|').replace('|#','|\\#') + ")(\\s+|)(\\.|\\#|\\:|)(\\s|)(\\d|[\\p{L}])*" + _bndr, 'i'), ''], // 580 Hespeler Rd building d, Cambridge, ON N1R 6J8, Canada
+			[XRegExp(" \\#(\s+|)(\\d)+([\\p{L}]|)" + _bndr, 'i'), ''], // 9390 Boulevard des Sciences #3A, Anjou, QC H1J 3C7, Canada
+			[XRegExp("^(\\d+)(\\s|)[A-DF-NP-RT-VX-Z](\\,|\\s|\\$)", 'i'), '$1'], //129 B Mitchell Ct, Mitchell, ON N0K 1N0, Canada
+			[XRegExp("^(\\#|)(\\d+)(\\s|)(\\-|\\,|\\/)(\\s|)", 'i'), ''], //#105 - 19 Everridge Square SW... also fits with or without spaces
 		];
 		for (let i = 0; i < _c.length; i++) {
-			let _aptM = a.match(_c[i][0]);
-			if (_aptM) {
+			if (_c[i][0].test(a)) {
+				let _aptM = XRegExp.exec(a,_c[i][0]);
 				_apt.push(_aptM[0].trim());
-				a = a.replace(_c[i][0], _c[i][1]).trim();
+				a = XRegExp.replace(a,_c[i][0], _c[i][1]).trim();
 			}
 		}
 		return {
@@ -281,24 +281,24 @@ addrsr={
 			throw 'Argument must be a non-empty string.';
 		}
 		// Deal with any repeated spaces
-		address = addrsr.cleanString(address);
+		address = addrsr.cleanString(address).replace(/^(\d+)\, /,'$1 '); //replace street number and street name comma "123, street name, city" to "123 street name, city"
     address=address.replace(/\, Newfoundland ([A-Z]\d[A-Z])/i,', NL $1'); // because partial province name
-    address=address.replace(/\, Bronx (\d{5})/i,', NY $1'); // because Bronx is not a state, ny is
+    address=address.replace(/\, (Bronx|Manhattan|Queens)(\,|) (\d{5})/i,', New York, NY $3'); // because Bronx is not a state, ny is
 		var result = {};
     var PI=addrsr.getPlaceInfo(address);
     if(PI.place){
       address=PI.stripped;
-      result.placeName=PI.place;
+			result.placeName=PI.place;
     }
+		var poBox=addrsr.getPOBox(address); //always parse PO box first because of apt with # (# 999) which could match PO Box # 123
+		if(poBox && poBox.parsed){
+			result.poBox=poBox.parsed;
+			address=poBox.stripped;
+		}
 		var subP=addrsr.getSubPremise(address);
 		if(subP && subP.parsed){
 			result.subPremise=subP.parsed;
 			address=subP.stripped;
-		}
-		var poBox=addrsr.getPOBox(address);
-		if(poBox && poBox.parsed){
-			result.poBox=poBox.parsed;
-			address=poBox.stripped;
 		}
 		// Assume comma, newline and tab is an intentional delimiter
 		var addressParts = address.split(/,|\t|\n/);
@@ -333,8 +333,9 @@ addrsr={
         if(_s && _s.code)
           stateString=_s.code;
       }
-		} else if (result.countryCode == 'CA' && stateString.match(/[A-Z]\d[A-Z] ?\d[A-Z]\d/)) {
-			result.zipCode = stateString.match(/[A-Z]\d[A-Z] ?\d[A-Z]\d/)[0];
+		} else if (result.countryCode == 'CA' && stateString.match(/[A-Z]\d[A-Z](\s+|)\d[A-Z]\d/)) { //matches "A1A 1A1" and "A1A1A1"
+			let _z = stateString.match(/([A-Z]\d[A-Z])(\s+|)(\d[A-Z]\d)/);
+			result.zipCode=_z[1]+' '+_z[3];
 			stateString = stateString.substring(0, stateString.length - result.zipCode.length).trim();
 			if (!stateString) {
 				stateString = canPostalCodeFirst[result.zipCode.substr(0, 1)];
@@ -441,11 +442,10 @@ addrsr={
 			var reStreet = new RegExp('\.\*\\b(?:' +
 				Object.keys(usStreetTypes).join('|') + ')\\b\\.?' +
 				'( +(?:' + usStreetDirectionalString + ')\\b)?', 'i');
-			var reAveLetter = new RegExp('\.\*\\b(av.?|ave.?|avenue)\.\*\\b[a-zA-Z]\\b', 'i');
-			var reNoSuffix = new RegExp('\\b\\d+\\s[a-zA-Z0-9_ ]+\\b', 'i');
-			
-			if (streetString.match(reAveLetter)) {
-				result.addressLine1 = streetString.match(reAveLetter)[0];
+			var reAveLetter = XRegExp('\.\*\\b(av.?|ave.?|avenue)\.\*\\b\\p{L}\\b', 'i');
+			var reNoSuffix = XRegExp('\\b\\d+\\s[\\p{L}0-9_\\-\\. ]+\\b', 'i');
+			if (reAveLetter.test(streetString)) {
+				result.addressLine1 = XRegExp.exec(streetString, reAveLetter)[0];//streetString.match(reAveLetter)[0];
 				streetString = streetString.replace(reAveLetter, "").trim(); // Carve off the first address line
 				if (streetString && streetString.length > 0) {
 					// Check if line2 data was already parsed
@@ -475,8 +475,8 @@ addrsr={
 					result.streetDirection=snDir[0].trim();
 				}
 				result.addressLine1 = [result.streetNumber, result.streetName].join(" ");
-			} else if (streetString.match(reStreet)) {
-				result.addressLine1 = streetString.match(reStreet)[0];
+			} else if (reStreet.test(streetString)) {
+				result.addressLine1 = XRegExp.exec(streetString, reStreet)[0];
 				streetString = streetString.replace(reStreet, "").trim(); // Carve off the first address line
 				if (streetString && streetString.length > 0) {
 					// Check if line2 data was already parsed
@@ -523,15 +523,18 @@ addrsr={
 			} else if (result.poBox) {
 				result.addressLine1 = ''+result.poBox;
 				//streetString = streetString.replace(result.poBox, "").trim(); // Carve off the first address line
-			} else if (streetString.match(reNoSuffix)) {
+			//} else if (streetString.match(reNoSuffix)) {
+			} else if (reNoSuffix.test(streetString)) {
+					//result.addressLine1 = XRegExp.exec(streetString, reAveLetter)[0];//streetString.match(reAveLetter)[0];
 				// Check for a line2 prefix followed by a single word. If found peel that off as addressLine2
-				var reLine2 = new RegExp('\\s(' + usLine2String + ')\\.?\\s[a-zA-Z0-9_\-]+$', 'i');
-				if (streetString.match(reLine2)) {
-					result.addressLine2 = streetString.match(reLine2)[0].trim();
+				var reLine2 = XRegExp('\\s(' + usLine2String + ')\\.?\\s[\\p{L}0-9_\\-]+$', 'i');
+				//if (streetString.match(reLine2)) {
+				if (reLine2.test(streetString)) {
+					result.addressLine2 = XRegExp.exec(streetString, reLine2)[0].trim();
 					streetString = streetString.replace(reLine2, "").trim(); // Carve off the first address line
 				}
 
-				result.addressLine1 = streetString.match(reNoSuffix)[0];
+				result.addressLine1 = XRegExp.exec(streetString, reNoSuffix)[0];
 				streetString = streetString.replace(reNoSuffix, "").trim(); // Carve off the first address line
 				var streetParts = result.addressLine1.split(' ');
 
@@ -546,7 +549,11 @@ addrsr={
 			throw 'Can not parse address. Invalid street address data. Input string: ' + address;
 		}
 		if(result.poBox) result.addressLine2=(result.addressLine2?result.addressLine2+', ':'')+result.poBox;
-		if(result.subPremise) result.addressLine2=(result.addressLine2?result.addressLine2+', ':'')+result.subPremise;
+		if(result.subPremise) {
+			result.addressLine2=(result.addressLine2?result.addressLine2+', ':'')+result.subPremise;
+			result.subPremise=result.subPremise.replace('#','').trim();
+		}
+		
 
 		var addressString = result.addressLine1 || '';
 		if (result.hasOwnProperty('addressLine2')) {
