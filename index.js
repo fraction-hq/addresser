@@ -270,9 +270,13 @@ addrsr={
 				a = XRegExp.replace(a,_c[i][0], _c[i][1]).trim();
 			}
 		}
+
+		//once subPremise has been replaced
+		let out=a.replace(/[\s]+\,/g,',').trim().replace(/[\,]+/g,',').trim().replace(/^\,/g,'').trim();
+		out = addrsr.cleanString(out).replace(/^(\d+)\, /,'$1 '); //replace street number and street name comma "123, street name, city" to "123 street name, city"
 		return {
 			parsed: _apt.join(', '),
-			stripped: a.replace(/[\s]+\,/g,',').trim().replace(/[\,]+/g,',').trim().replace(/^\,/g,'').trim()
+			stripped: out
 		};
 	},
 	parseAddress: function(address,options) {
@@ -281,7 +285,6 @@ addrsr={
 		if (!address) {
 			throw 'Argument must be a non-empty string.';
 		}
-		// Deal with any repeated spaces
 		address = addrsr.cleanString(address).replace(/^(\d+)\, /,'$1 '); //replace street number and street name comma "123, street name, city" to "123 street name, city"
     address=address.replace(/\, Newfoundland ([A-Z]\d[A-Z])/i,', NL $1'); // because partial province name
     address=address.replace(/\, (Bronx|Manhattan|Queens)(\,|) (\d{5})/i,', New York, NY $3'); // because Bronx is not a state, ny is
@@ -503,6 +506,7 @@ addrsr={
 					result.streetDirection = result.streetDirection.toUpperCase();
 				}
 
+				// if no space in street parts, split them "2021BearhillRd".replace(/^(\d+)([a-z]+)/i,'$1 $2');
 				// Assume type is last and number is first   
 				result.streetNumber = streetParts[0]; // Assume number is first element
 				// If there are only 2 street parts (number and name) then its likely missing a "real" suffix and the street name just happened to match a suffix
