@@ -260,7 +260,7 @@ addrsr={
 			[XRegExp(_bndr + "([\\d]+)(st|nd|rd|th|e|ieme|er|eme) (" + Object.keys(usLine2Prefixes).join('|') + ")" + _bndr, 'i'), ''], // 2nd floor, 3rd floor, 4e étage etc
 			[XRegExp(_bndr + "(" + Object.keys(usLine2Prefixes).join('|').replace('|#','|\\#') + ")([\\.|\\#|\\:|\\s]+)(\\d|[\\p{L}])*" + _bndr, 'i'), ''], // 580 Hespeler Rd building d, Cambridge, ON N1R 6J8, Canada
 			[XRegExp(" \\#(\s+|)(\\d)+([\\p{L}]|)" + _bndr, 'i'), ''], // 9390 Boulevard des Sciences #3A, Anjou, QC H1J 3C7, Canada
-			[XRegExp("^(\\d+)(\\s|)[A-DF-NP-RT-VX-Z](\\,|\\s|\\$)", 'i'), '$1'], //129 B Mitchell Ct, Mitchell, ON N0K 1N0, Canada
+			[XRegExp("^(\\d+)(\\s|)[A-DF-NP-RT-VX-Z](\\,|\\s|\\$)", 'i'), '$1 '], //129 B Mitchell Ct, Mitchell, ON N0K 1N0, Canada
 			[XRegExp("^(\\#|)(\\d+)(\\s|)(\\-|\\,|\\/)(\\s|)", 'i'), ''], //#105 - 19 Everridge Square SW... also fits with or without spaces
 		];
 		for (let i = 0; i < _c.length; i++) {
