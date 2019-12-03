@@ -258,7 +258,7 @@ addrsr={
 		let _bndr = "(\\b|\\,|\\s)", _apt = [];
 		var _c = [
 			[XRegExp("^RR ([\\d]+) Comp([a-z]+|) ([\\d]+) Site ([\\d]+)" + _bndr, 'i'), ''], //RR 1 Comp 45 Site 19, 32 Willow Hill Est, Sundre, Alberta T0M 1X0, Canada
-			[XRegExp(_bndr + "([\\d]+)(st|nd|rd|th|e|ieme|er|eme) (" + Object.keys(usLine2Prefixes).join('|') + ")" + _bndr, 'i'), ''], // 2nd floor, 3rd floor, 4e étage etc
+			[XRegExp(_bndr + "([\\d]+)(st|nd|rd|th|e|ieme|er|eme|) (" + Object.keys(usLine2Prefixes).join('|') + ")" + _bndr, 'i'), ''], // 2nd floor, 3rd floor, 4e étage, 15 floor etc
 			[XRegExp(_bndr + "(" + Object.keys(usLine2Prefixes).join('|').replace('|#','|\\#') + ")([\\,|\\.|\\#|\\:|\\s]+)(\\d|[\\p{L}])*" + _bndr, 'i'), ''], // 580 Hespeler Rd building d, Cambridge, ON N1R 6J8, Canada
 			[XRegExp(" \\#(\s+|)(\\d)+([\\p{L}]|)" + _bndr, 'i'), ''], // 9390 Boulevard des Sciences #3A, Anjou, QC H1J 3C7, Canada
 			[XRegExp("^(\\d+)(\\s|)[A-DF-NP-RT-VX-Z](\\,|\\s|\\$)", 'i'), '$1 '], //129 B Mitchell Ct, Mitchell, ON N0K 1N0, Canada
