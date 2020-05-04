@@ -1,10 +1,12 @@
 var allStates = require('./data/states.json');
 var usStreetTypes = require('./data/us-street-types.json');
 var allCities = require('./data/cities.json');
+var caStates = require('./data/ca-states.json');
 var usStates = require('./data/us-states.json');
 var usCities = require('./data/us-cities.json');
 const XRegExp = require('xregexp');
-
+const ENTITTIES = require('html-entities').AllHtmlEntities;
+const diacritics = require('./data/diacritics.js');
 
 'use strict';
 
@@ -33,14 +35,22 @@ function randomProperty(obj) {
 };
 
 var usStreetDirectional = {
+	east		: "E",
+	est			: "E",
+	nord		: "N",
+	nordest		: "NE",
+	nordouest	: "NO",
 	north		: "N",
 	northeast	: "NE",
-	east		: "E",
+	northwest	: "NW",
+	ouest		: "O",
 	southeast	: "SE",
 	south		: "S",
 	southwest	: "SW",
+	sud			: "S",
+	sudest		: "SE",
+	sudouest	: "SO",
 	west		: "W",
-	northwest	: "NW",
 },
 canPostalCodeFirst = {
 	A	: 'NL', //	Newfoundland and Labrador
@@ -69,6 +79,7 @@ usLine2Prefixes = {
   'APP'          : 'APT', // french for apt
 	'APT'          : 'APT',
 	'BASEMENT'     : 'BSMT',
+	'BAY'		   : 'BAY',
 	'BSMT'         : 'BSMT',
 	'BLDG'         : 'BLDG',
 	'BUILDING'     : 'BLDG',
@@ -114,8 +125,73 @@ usLine2Prefixes = {
 	'UPPR'         : 'UPPR',
 	'#'			       : '#',
 },
+
+entities={
+	decode:function(dat){ //entities.decode
+		if(dat=='undefined')
+			return '';
+		if (!dat)
+		  return dat;
+		var f=entities.decode,
+			e=ENTITTIES.decode;
+		if(typeof dat==='string'){
+			try{
+				return e(e(dat));
+			}
+			catch(er){
+				console.error(er);
+				return false;
+			}
+		}
+		else if(Array.isArray(dat) || typeof dat==='object' && dat.constructor === Object){
+			for(var i in dat){
+				if(typeof dat[i]=='undefined')
+					continue;
+				try{
+					dat[i]=f(dat[i]);
+				}
+				catch(e){
+					console.error(e);
+					return false;
+				}
+			}
+		}
+		return dat;
+	},
+	removeAccents:function(dat){ // entities.removeAccents()
+		if(dat=='undefined')
+			return '';
+		if(!dat)
+			return dat;
+		if(typeof dat=='string'){ //remove unicode characters
+			var r = /\\u([\d\w]{4})/gi;
+			dat = dat.replace(r, function (match, grp) {
+				return String.fromCharCode(parseInt(grp, 16)); 
+			});
+			return diacritics.remove(entities.decode(dat)); //convert html entities to accents, then accents to letters
+		}
+		else if(Array.isArray(dat) || typeof dat==='object' && dat.constructor === Object){
+			for(var i in dat){
+				if(typeof dat[i]=='undefined')
+					continue;
+				try{
+					dat[i]=(dat[i] && typeof dat[i]!='boolean')?entities.removeAccents(dat[i]):dat[i];
+				}
+				catch(e){
+					console.error(e);
+					return false;
+				}
+			}
+		}
+		return dat;
+	}
+};
+
+var usStreetDirectionalString = Object.keys(usStreetDirectional).map(x => usStreetDirectional[x]).concat(Object.keys(usStreetDirectional)).reduce(function(uq,it){return uq.includes(it)?uq:[...uq,it]},[]).join('|');
+var usLine2String = Object.keys(usLine2Prefixes).join('|');
+var
 addrsr={
-  cleanString:function(input){
+  cleanString:function(input){ // a lazy and overkill way to clean a string... because we can't control 100% of the user input.
     if(!input || typeof input=='boolean') return input;
     if(typeof input=='object'){
       for(let x in input){
@@ -131,19 +207,20 @@ addrsr={
         a=a.replace(/\s+\,/g,',').trim().replace(/\,+/g,',').trim().replace(/\,+$/,'').trim().replace(/^\,+/,'').trim();
       return a.replace(/\s+/g,' ').trim();
     };
-    input=_doTrim(input.trim().replace(/\\n/g,', ').replace(/\n/g,', '));
+    input=_doTrim(entities.removeAccents(input.trim()).replace(/(\\n|\n)/g,', ').replace(/\$/g,''));
     
     let _toReplace=[
-      ['\n', ', '],
-      [', ,', ','],
-      ['u00f4', 'ô'],
-      ['u00e7', 'ç'],
-      ['u00e8', 'è'],
-      ['u00e9', 'é'],
-      ['u00e0','à'],
-      ['Ã´','ô'],
-      ['Ã©','é'],
-      ['ÃƒÂ¨', 'é']
+		['\n', ', '],
+		['\\', '/'],
+      	[', ,', ','],
+      	['u00f4', 'ô'],
+      	['u00e7', 'ç'],
+      	['u00e8', 'è'],
+      	['u00e9', 'é'],
+      	['u00e0','à'],
+      	['Ã´','ô'],
+      	['Ã©','é'],
+      	['ÃƒÂ¨', 'é']
     ];
     for(let i=0;i<_toReplace.length;i++){
       while(input.indexOf(_toReplace[i][0])!=-1) input=input.replace(_toReplace[i][0],_toReplace[i][1]);
@@ -154,7 +231,7 @@ addrsr={
         output += input.charAt(i);
       }
     }
-    return _doTrim(output.trim());
+    return _doTrim(entities.removeAccents(output).trim());
   },
   getPlaceInfo:function(input){
     //The best example I could get for that function is:
@@ -196,7 +273,7 @@ addrsr={
             rpn+=rsp[0].trim()+' ';
             rsp.shift();
           }
-					placeName=addrsr.cleanString(rpn)+(placeName?', '+placeName:'');
+			placeName=addrsr.cleanString(rpn)+(placeName?', '+placeName:'');
           input=addrsr.cleanString(rsp.join(', '));
         }
       }
@@ -252,61 +329,94 @@ addrsr={
 	 * 		{string} parsed parsed subPremise
 	 * 		{string} stripped original string, w/o subPremise
 	 */
-	getSubPremise: function(a) {
+	getSubPremise: function(a,options) {
 		//remove subPremise from original address
 		//return parsed value
 		let _bndr = "(\\b|\\,|\\s)", _apt = [];
+		//prevent saints names from being parsed as "suite" like "Ste-Marie" which is "Sainte-Marie"
+		//really not clever, works for now as a quick fix, will work on that later
+		a=a.replace(/(ste)\-([a-z]{4,100})/i,'$1___SAINTE___$2');
 		var _c = [
-			[XRegExp("^RR ([\\d]+) Comp([a-z]+|) ([\\d]+) Site ([\\d]+)" + _bndr, 'i'), ''], //RR 1 Comp 45 Site 19, 32 Willow Hill Est, Sundre, Alberta T0M 1X0, Canada
-			[XRegExp(_bndr + "([\\d]+)(st|nd|rd|th|e|ieme|er|eme|) (" + Object.keys(usLine2Prefixes).join('|') + ")" + _bndr, 'i'), ''], // 2nd floor, 3rd floor, 4e étage, 15 floor etc
-			[XRegExp(_bndr + "(" + Object.keys(usLine2Prefixes).join('|').replace('|#','|\\#') + ")([\\,|\\.|\\#|\\:|\\s]+)(\\d|[\\p{L}])*" + _bndr, 'i'), ''], // 580 Hespeler Rd building d, Cambridge, ON N1R 6J8, Canada
-			[XRegExp(" \\#(\s+|)(\\d)+([\\p{L}]|)" + _bndr, 'i'), ''], // 9390 Boulevard des Sciences #3A, Anjou, QC H1J 3C7, Canada
-			[XRegExp("^(\\d+)(\\s|)[A-DF-NP-RT-VX-Z](\\,|\\s|\\$)", 'i'), '$1 '], //129 B Mitchell Ct, Mitchell, ON N0K 1N0, Canada
-			[XRegExp("^(\\#|)(\\d+)(\\s|)(\\-|\\,|\\/)(\\s|)", 'i'), ''], //#105 - 19 Everridge Square SW... also fits with or without spaces
+				//I dont know what it means but I had to manage for a customer
+				//RR 1 Comp 45 Site 19, 32 Willow Hill Est, Sundre, Alberta T0M 1X0, Canada
+			[XRegExp("^RR ([\\d]+) Comp([a-z]+|) ([\\d]+) Site ([\\d]+)" + _bndr, 'i'), ''],
+
+			//TODO: 10 1/2 6th ave,
+			//2875 boul. Laurier, D-3, Bureau 600, Québec, Quebec G1V 2M2, Canada
+
+				// 2nd floor, 3rd floor, 4e étage, 15 floor, 15th floor, 15 th floor etc
+			[XRegExp(_bndr + "([\\d]+)(\s+|)(st|nd|rd|th|e|ieme|er|eme|) (" + Object.keys(usLine2Prefixes).join('|').replace('|#','') + ")" + _bndr, 'i'), ''],
+ 
+				// building A, Suite 1, STE A-1, apt 3A, apt #3 and so on
+				// 580 Hespeler Rd building d, Cambridge, ON N1R 6J8, Canada
+				// 10120 SW NIMBUS AVE STE C-2, GLB-JOKERJY, PORTLAND, Oregon 97223-4336, US
+			[XRegExp(_bndr + "(" + Object.keys(usLine2Prefixes).join('|').replace('|#','|\\#') + ")([\\,|\\.|\\#|\\:|\\s|\\-]+)(\\d|\\-|[\\p{L}])*" + _bndr, 'i'), ''],
+
+			 	// 9390 Boulevard des Sciences #3A, Anjou, QC H1J 3C7, Canada
+			[XRegExp(" \\#(\s+|)(\\d)+(\-|)([\\p{L}]|)" + _bndr, 'i'), ''],
+
+				//house number + apt + street
+				//129 B Mitchell Ct, Mitchell, ON N0K 1N0, Canada
+			[XRegExp("^(\\d+)(\\s|)[A-DF-MP-RT-VX-Z](\\,|\\s)", 'i'), '$1 '],
+
+				//starting with subpremise
+				//#105 - 19 Everridge Square SW... also fits with or without spaces
+			[XRegExp("^(\\#|)(\\d+)(\\s|)(\\-|\\,|\\/)(\\s|)", 'i'), ''],
 		];
 		for (let i = 0; i < _c.length; i++) {
 			if (_c[i][0].test(a)) {
+				if(options.verbose) console.info('subPremise match rule #'+i);
 				let _aptM = XRegExp.exec(a,_c[i][0]);
 				_apt.push(_aptM[0].trim());
 				a = XRegExp.replace(a,_c[i][0], _c[i][1]).trim();
 			}
 		}
+		_apt.filter(function(a){
+			return a?true:false;
+		});
+		a=a.replace(/(ste)___SAINTE___([a-z]{4,100})/i,'$1-$2'); //restore "saint" name
 
 		//once subPremise has been replaced
 		let out=a.replace(/[\s]+\,/g,',').trim().replace(/[\,]+/g,',').trim().replace(/^\,/g,'').trim();
 		out = addrsr.cleanString(out).replace(/^(\d+)\, /,'$1 '); //replace street number and street name comma "123, street name, city" to "123 street name, city"
 		return {
-			parsed: _apt.join(', '),
+			parsed: _apt.join(', ').replace(/(^[\,]+|[\,]+$)/,''),
 			stripped: out
 		};
 	},
-	parseAddress: function(address,options) {
+	parseAddress: function(input,options) {
 		if(!options) options={};
 		// Validate a non-empty string was passed
-		if (!address) {
+		if (!input) {
 			throw 'Argument must be a non-empty string.';
 		}
-		address = addrsr.cleanString(address).replace(/^(\d+)\, /,'$1 '); //replace street number and street name comma "123, street name, city" to "123 street name, city"
-    address=address.replace(/\, Newfoundland ([A-Z]\d[A-Z])/i,', NL $1'); // because partial province name
-    address=address.replace(/\, (Bronx|Manhattan|Queens)(\,|) (\d{5})/i,', New York, NY $3'); // because Bronx is not a state, ny is
+		if(options.verbose) console.info('INPUT RECEIVED:',input);
+		address = addrsr.cleanString(input).replace(/^(\d+)\, /,'$1 '); //replace street number and street name comma "123, street name, city" to "123 street name, city"
+    	address=address.replace(/\, Newfoundland ([A-Z]\d[A-Z])/i,', NL $1'); // because partial province name
+    	address=address.replace(/\, (Bronx|Manhattan|Queens)(\,|) (\d{5})/i,', New York, NY $3'); // because Bronx is not a state, ny is
+		if(options.verbose) console.info('address pre parsed:',address);
 		var result = {};
-    var PI=addrsr.getPlaceInfo(address);
-    if(PI.place){
-      address=PI.stripped;
+		var PI=addrsr.getPlaceInfo(address,options);
+		if(PI.place){
+			address=PI.stripped;
 			result.placeName=PI.place;
-    }
-		var poBox=addrsr.getPOBox(address); //always parse PO box first because of apt with # (# 999) which could match PO Box # 123
+			if(options.verbose) console.info('placeName stripped:','"'+result.placeName+'"',address);
+		}
+		var poBox=addrsr.getPOBox(address,options); //always parse PO box first because of apt with # (# 999) which could match PO Box # 123
 		if(poBox && poBox.parsed){
 			result.poBox=poBox.parsed;
 			address=poBox.stripped;
+			if(options.verbose) console.info('poBox stripped:','"'+result.poBox+'"',address);
 		}
-		var subP=addrsr.getSubPremise(address);
+		var subP=addrsr.getSubPremise(address,options);
 		if(subP && subP.parsed){
 			result.subPremise=subP.parsed;
 			address=subP.stripped;
+			if(options.verbose) console.info('subPremise stripped:','"'+result.subPremise+'"',address);
 		}
 		// Assume comma, newline and tab is an intentional delimiter
-		var addressParts = address.split(/,|\t|\n/);
+		var addressParts = address.split(/,|\t|\n/).map(Function.prototype.call, String.prototype.trim);
+		if(options.verbose) console.info('addressParts:',addressParts);
 
 		// Check if the last section contains country reference (Just supports US for now)
 		var countrySection = addressParts[addressParts.length - 1].trim();
@@ -317,74 +427,108 @@ addrsr={
 			if (result.countryCode == 'US') result.country = 'United States';
 			addressParts.splice(-1, 1);
 		}
+
+		if(options.verbose) console.info('countryCode:',result.countryCode);
 		// Assume the last address section contains state, zip or both
 		var stateString = addressParts[addressParts.length - 1].trim();
 		// Parse and remove zip or zip plus 4 from end of string
 		if (stateString.match(/\d{5}$/)) {
 			result.zipCode = stateString.match(/\d{5}$/)[0];
-      stateString = stateString.substring(0, stateString.length - 5).trim();
-      if(!stateString){
-        let _s=addrsr.getStateFromZip(result.zipCode);
-        if(_s && _s.code)
-          stateString=_s.code;
-      }
+			stateString = stateString.substring(0, stateString.length - 5).trim();
+			if(options.verbose) console.info('stateString match \\d{5}$:','"'+result.zipCode+'"',stateString);
 		} else if (stateString.match(/\d{5}-\d{4}$/)) {
 			var zipString = stateString.match(/\d{5}-\d{4}$/)[0];
 			result.zipCode = zipString.substring(0, 5);
 			result.zipCodePlusFour = zipString;
 			stateString = stateString.substring(0, stateString.length - 10).trim();
-      if(!stateString){
-        let _s=addrsr.getStateFromZip(result.zipCode);
-        if(_s && _s.code)
-          stateString=_s.code;
-      }
-		} else if (result.countryCode == 'CA' && stateString.match(/[A-Z]\d[A-Z](\s+|)\d[A-Z]\d/)) { //matches "A1A 1A1" and "A1A1A1"
-			let _z = stateString.match(/([A-Z]\d[A-Z])(\s+|)(\d[A-Z]\d)/);
+			if(options.verbose) console.info('stateString match \\d{5}-\\d{4}$:','"'+result.zipCode+'"',stateString);
+		} else if (stateString.match(/[A-Z]\d[A-Z](\-|\s+|)\d[A-Z]\d/)) { //matches "A1A 1A1", "A1A-1A1" and "A1A1A1"
+			let _z = stateString.match(/([A-Z]\d[A-Z])(\-|\s+|)(\d[A-Z]\d)/);
 			result.zipCode=_z[1]+' '+_z[3];
+			result.country='Canada';
+			result.countryCode='CA';
 			stateString = stateString.substring(0, stateString.length - result.zipCode.length).trim();
-			if (!stateString) {
-				stateString = canPostalCodeFirst[result.zipCode.substr(0, 1)];
-			}
+			if(options.verbose) console.info('stateString match [A-Z]\\d[A-Z](\\-|\\s+|)\\d[A-Z]\\d:','"'+result.zipCode+'"',stateString);
 		}
 		else if (result.countryCode == 'CA' && stateString.match(/\b[A-Z]\d[A-Z]\b/)) {
 			result.zipCode = stateString.match(/\b[A-Z]\d[A-Z]\b/)[0];
 			result.zipCodeIsIncomplete = true;
 			stateString = stateString.substring(0, stateString.length - result.zipCode.length).trim();
-			if (!stateString) {
-				stateString = canPostalCodeFirst[result.zipCode.substr(0, 1)];
-			}
-    }
+			if(options.verbose) console.info('stateString match \\b[A-Z]\\d[A-Z]\\b:','"'+result.zipCode+'"',stateString);
+    	}
     
 		// Parse and remove state
 		if (stateString.length > 0) { // Check if anything is left of last section
-			addressParts[addressParts.length - 1] = stateString;
+			addressParts[addressParts.length - 1] = stateString.trim();
 		} else {
 			addressParts.splice(-1, 1);
 			stateString = addressParts[addressParts.length - 1].trim();
 		}
+		if(options.verbose) console.info('stateString:',stateString);
 		// First check for just an Abbreviation
-		if (stateString.length == 2 && getKeyByValue(allStates, stateString.toUpperCase())) {
-			result.stateAbbreviation = stateString.toUpperCase();
-			result.stateName = toTitleCase(getKeyByValue(allStates, stateString.toUpperCase()));
-			stateString = stateString.substring(0, stateString.length - 2);
-		} else {
-			// Next check if the state string ends in state name or abbeviation
-			// (state abbreviation must be preceded by a space to ensure accuracy)
-			for (var key in allStates) {
-				var re = new RegExp(" " + allStates[key] + "$|" + key + "$", "i");
-				if (stateString.match(re)) {
-					stateString = stateString.replace(re, "");
-					result.stateAbbreviation = allStates[key];
-					result.stateName = toTitleCase(key);
-					break;
+		let _doCheckState=function(){
+			if (stateString.length == 2 && getKeyByValue(allStates, stateString.toUpperCase())) {
+				result.stateAbbreviation = stateString.toUpperCase();
+				result.stateName = toTitleCase(getKeyByValue(allStates, stateString.toUpperCase()));
+				stateString = stateString.substring(0, stateString.length - 2);
+			} else {
+				// Next check if the state string ends in state name or abbeviation
+				// (state abbreviation must be preceded by a space to ensure accuracy)
+				for (let key in allStates) {
+					var re = new RegExp(" " + allStates[key] + "$|" + key.replace(/\-/g,'(\\-|\\s)') + "$", "i");
+					if (stateString.match(re)) {
+						stateString = stateString.replace(re, "");
+						result.stateAbbreviation = allStates[key];
+						result.stateName = toTitleCase(key);
+						break;
+					}
 				}
 			}
 		}
-		if (!result.stateAbbreviation || result.stateAbbreviation.length != 2) {
-			if(options.debug) console.warn(stateString,result)
-			throw 'Can not parse address. State not found.';
+		_doCheckState();
+		if(!result.stateAbbreviation || result.stateAbbreviation.length != 2){
+			if(result.zipCode){
+				if(result.countryCode == 'US'){
+					let _s=addrsr.getStateFromZip(result.zipCode);
+					if(_s && _s.code){
+						addressParts.push(stateString);
+						if(options.verbose) console.info('no state found, got from zip:',_s);
+						stateString=_s.code;
+						_doCheckState();
+					}
+				}
+				if (result.countryCode =='CA') {
+					stateString = canPostalCodeFirst[result.zipCode.substr(0, 1)];
+					addressParts.push(stateString);
+					if(options.verbose) console.info('no province found, got from postalCode:',stateString);
+					_doCheckState();
+				}
+			}
+			if(result.countryCode === 'CA'){
+				//CA may be California, not Canada?
+				allCities.CA.some(function(element) {
+					var re = new RegExp(element + "$", "i");
+					if (stateString.match(re)) {
+						//let city = stateString.replace(re, ""); // Carve off the place name
+						stateString='CA';
+						_doCheckState();
+						stateString=''+element;
+						result.countryCode='US';
+						result.country='United States';
+		
+						result.city = element;
+						if(options.verbose) console.info('found city and state from "allCities.CA":','"'+element+'"');
+						return element; // Found a winner - stop looking for cities
+					}
+				});
+			}
 		}
 
+		if (!result.stateAbbreviation || result.stateAbbreviation.length != 2) {
+			if(options.debug || options.verbose) console.warn(stateString,result)
+			throw 'Can not parse address. State not found.';
+		}
+		if(options.verbose) console.info('remaining addressParts with stateString:','"'+stateString+'"',addressParts);
 		// Parse and remove city/place name
 		var cityString = "";
 		if (stateString.length > 0) { // Check if anything is left of last section
@@ -395,24 +539,25 @@ addrsr={
 			cityString = addressParts[addressParts.length - 1].trim();
 		}
 		result.city = "";
+		if(options.verbose) console.info('cityString:',cityString);
 		allCities[result.stateAbbreviation].some(function(element) {
 			var re = new RegExp(element + "$", "i");
 			if (cityString.match(re)) {
 				cityString = cityString.replace(re, ""); // Carve off the place name
 
 				result.city = element;
+				if(options.verbose) console.info('found city from "allCities.'+result.stateAbbreviation+'":','"'+element+'"');
 				return element; // Found a winner - stop looking for cities
 			}
 		});
 		if (!result.city) {
 			result.city = toTitleCase(cityString);
+			if(options.verbose) console.info('City from cityString:','"'+result.city+'"');
 			cityString = "";
 		}
 
 		// Parse the street data
 		var streetString = "";
-		var usStreetDirectionalString = Object.keys(usStreetDirectional).map(x => usStreetDirectional[x]).join('|');
-		var usLine2String = Object.keys(usLine2Prefixes).join('|');
 
 		if (cityString.length > 0) { // Check if anything is left of last section
 			addressParts[addressParts.length - 1] = cityString;
@@ -421,7 +566,7 @@ addrsr={
 		}
 
 		if (addressParts.length > 2) {
-			if(options.debug) console.warn(addressParts,result)
+			if(options.debug || options.verbose) console.warn(addressParts,result)
 			throw 'Can not parse address. More than two address lines.';
 		} else if (addressParts.length === 2) {
 			// check if the secondary data is first
@@ -457,7 +602,7 @@ addrsr={
 				if (streetString && streetString.length > 0) {
 					// Check if line2 data was already parsed
 					if (result.hasOwnProperty('addressLine2') && result.addressLine2.length > 0) {
-						if(options.debug) console.warn(addressParts,result)
+						if(options.debug || options.verbose) console.warn(addressParts,result)
 						throw 'Can not parse address. Too many address lines. Input string: ' + address;
 					} else {
 						result.addressLine2 = streetString;
@@ -489,7 +634,7 @@ addrsr={
 				if (streetString && streetString.length > 0) {
 					// Check if line2 data was already parsed
 					if (result.hasOwnProperty('addressLine2') && result.addressLine2.length > 0) {
-						if(options.debug) console.warn(addressParts,result)
+						if(options.debug || options.verbose) console.warn(addressParts,result)
 						throw 'Can not parse address. Too many address lines. Input string: ' + address;
 					} else {
 						result.addressLine2 = streetString;
@@ -528,6 +673,7 @@ addrsr={
 					result.addressLine1 = result.addressLine1 + ' ' + result.streetSuffix;
 				}
 				if (result.streetDirection) {
+					if(result.streetDirection.length>2) result.streetDirection=toTitleCase(result.streetDirection);
 					result.addressLine1 = result.addressLine1 + ' ' + result.streetDirection;
 				}
 			} else if (result.poBox) {
@@ -553,11 +699,11 @@ addrsr={
 				streetParts.shift(); // Remove the first element
 				result.streetName = streetParts.join(' '); // Assume street name is everything else
 			} else {
-				if(options.debug) console.warn(addressParts,result)
+				if(options.debug || options.verbose) console.warn(addressParts,result)
 				throw 'Can not parse address. Invalid street address data. Input string: ' + address;
 			}
 		} else if(!result.subPremise && !result.poBox) {
-			if(options.debug) console.warn(addressParts,result)
+			if(options.debug || options.verbose) console.warn(addressParts,result)
 			throw 'Can not parse address. Invalid street address data. Input string: ' + address;
 		}
 		if(result.poBox) result.addressLine2=(result.addressLine2?result.addressLine2+', ':'')+result.poBox;
@@ -566,17 +712,20 @@ addrsr={
 			result.subPremise=result.subPremise.replace('#','').trim();
 		}
 		
-
+		if(!result.addressLine1 && result.addressLine2){
+			result.addressLine1=''+result.addressLine2;
+			delete result.addressLine2;
+		}
 		var addressString = result.addressLine1 || '';
 		if (result.hasOwnProperty('addressLine2')) {
 			addressString += ', ' + result.addressLine2;
 		}
 		if (addressString && result.hasOwnProperty("city") && result.hasOwnProperty("stateAbbreviation") && result.hasOwnProperty("zipCode")) {
-			var idString = (addressString?addressString + ", ":'') + result.city + ", " + result.stateAbbreviation + " " + result.zipCode+", "+result.country;
+			var idString = (addressString?addressString + ", ":'') + result.city + ", " + result.stateAbbreviation + " " + result.zipCode+(result.country?", "+result.country:'');
 			result['formattedAddress'] = idString;
-			result['id'] = encodeURI(idString.replace(/ /g, '-').replace(/\#/g, '-').replace(/\//g, '-').replace(/\./g, '-'));
+			result['id'] = encodeURI(idString.replace(/ /g, '-').replace(/\#/g, '-').replace(/\//g, '-').replace(/\./g, '-').replace(/\,/g, '').replace(/\-+/g,'-'));
 		}
-
+		if(options.verbose) console.info('RESULT FOR "'+address+'":',result)
 		return result;
 	},
 

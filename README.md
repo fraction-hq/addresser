@@ -11,10 +11,17 @@ A Node.js library for parsing property addresses. Also includes other address ut
 
     var addresser = require('addresser');
     
+    addresser.parseAddress(address [,options]);
+    string address 
+    object options (optionnal)
+      {
+        verbose : true|false log steps
+        debug   : true|false log debug info in case of an error (included in verbose)
+      }
     // Isn't confused by duplicate place names
     console.log(addresser.parseAddress("400 South Orange Ave, South Orange , NJ 07079"););
     
-    { id: '400-South-Orange-Ave,-South-Orange,-NJ-07079',
+    { id: '400-South-Orange-Ave-South-Orange-NJ-07079',
       formattedAddress: '400 South Orange Ave, South Orange, NJ 07079',
       zipCode: '07079',
       stateAbbreviation: 'NJ',
@@ -28,7 +35,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
     // Handles extra whitespace
     console.log(addresser.parseAddress("123 Double  Space    St, Conway, SC 29526"));
     
-    { id: '123-Double-Space-St,-Conway,-SC-29526',
+    { id: '123-Double-Space-St-Conway-SC-29526',
       formattedAddress: '123 Double Space St, Conway, SC 29526',
       streetNumber: '123',
       streetSuffix: 'St',
@@ -42,7 +49,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
     // normalizes to Title Case  
     console.log(addresser.parseAddress("123 Main St, Conway, south carolina 29526-1234"));
     
-    { id: '123-Main-St,-Conway,-SC-29526',
+    { id: '123-Main-St-Conway-SC-29526',
       formattedAddress: '123 Main St, Conway, SC 29526',
       streetNumber: '123',
       streetSuffix: 'St',
@@ -58,7 +65,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
     // Normalizes street types to standard abbreviations.
     console.log(addresser.parseAddress("1301 Columbia College Drive Unit 101 Columbia, SC 29203"));
 
-    { id: '1301-Columbia-College-Dr,-Unit-101,-Columbia,-SC-29203',
+    { id: '1301-Columbia-College-Dr-Unit-101-Columbia-SC-29203',
       formattedAddress: '1301 Columbia College Dr, Unit 101, Columbia, SC 29203',
       zipCode: '29203',
       stateAbbreviation: 'SC',
@@ -72,7 +79,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
     
     // Handles trailing street directionals  
     console.log(addresser.parseAddress("300 BOYLSTON AVE E SEATTLE WA 98102"));
-    { id: '300-Boylston-Ave-E,-Seattle,-WA-98102',
+    { id: '300-Boylston-Ave-E-Seattle-WA-98102',
       formattedAddress: '300 Boylston Ave E, Seattle, WA 98102',
       zipCode: '98102',
       stateAbbreviation: 'WA',
@@ -86,7 +93,7 @@ A Node.js library for parsing property addresses. Also includes other address ut
 
     // Handles post office boxes 
     console.log(addresser.parseAddress("PO BOX 333 SEATTLE WA 98102"));
-    { id: 'PO-BOX-333,-Seattle,-WA-98102',
+    { id: 'PO-BOX-333-Seattle-WA-98102',
       formattedAddress: 'PO BOX 333, Seattle, WA 98102',
       zipCode: '98102',
       stateAbbreviation: 'WA',
