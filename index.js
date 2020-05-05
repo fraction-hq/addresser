@@ -268,13 +268,19 @@ addrsr={
       if(rsp[0] && rsp[0].trim()){
         var rfp=rsp[0].trim(),rpn='';
         if(!rfp.match(/[0-9]/)){
-          console.warn('First part of address has no numbers',rfp)
-          while(rsp && rsp[0] && rsp[0].trim() && !rsp[0].trim().match(/[0-9]/)){
-            rpn+=rsp[0].trim()+' ';
-            rsp.shift();
-          }
+          	console.warn('First part of address has no numbers',rfp)
+          	while(rsp && rsp[0] && rsp[0].trim() && !rsp[0].trim().match(/[0-9]/)){
+            	rpn+=rsp[0].trim()+' ';
+            	rsp.shift();
+          	}
 			placeName=addrsr.cleanString(rpn)+(placeName?', '+placeName:'');
-          input=addrsr.cleanString(rsp.join(', '));
+          	input=addrsr.cleanString(rsp.join(', '));
+        }
+        else if(rfp.match(/^[a-z\s\-\.]{10,1000}[\s\-]+[a-z0-9\s\-\.]+$/i) && !addrsr.getPOBox(rfp)){
+          	console.warn('First part of address ends with number',rfp);
+		  	rsp.shift();
+			placeName=addrsr.cleanString(rfp)+(placeName?', '+placeName:'');
+          	input=addrsr.cleanString(rsp.join(', '));
         }
       }
     }

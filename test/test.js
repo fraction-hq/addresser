@@ -916,6 +916,18 @@ describe('#parseAddress', function() {
         expect(result.stateAbbreviation).to.equal("NL");
         expect(result.zipCode).to.equal("A1Y 1B3");
     });
+    it('should parse place name with numbers', function() {
+        var result = {};
+        try{ result=addresser.parseAddress("COMMUNITY OUTREACH ACADEMY SITE 126, 5640 DUDLEY BLVD, MCCLELLAN, California 95652-1034, US");} catch(er){console.error(er);}
+        expect(result.streetNumber).to.equal("5640");
+        expect(result.streetName).to.equal("Dudley");
+        expect(result.streetSuffix).to.equal("Blvd");
+        expect(result.placeName).to.equal("Community Outreach Academy Site 126");
+        expect(result.addressLine1).to.equal("5640 Dudley Blvd");
+        expect(result.city).to.equal("Mcclellan");
+        expect(result.stateAbbreviation).to.equal("CA");
+        expect(result.zipCode).to.equal("95652");
+    });
 
     
     
