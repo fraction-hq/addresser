@@ -330,6 +330,7 @@ addrsr={
 	 * 		{string} stripped original string, w/o subPremise
 	 */
 	getSubPremise: function(a,options) {
+		if(!options) options={};
 		//remove subPremise from original address
 		//return parsed value
 		let _bndr = "(\\b|\\,|\\s)", _apt = [];
