@@ -928,9 +928,28 @@ describe('#parseAddress', function() {
         expect(result.stateAbbreviation).to.equal("CA");
         expect(result.zipCode).to.equal("95652");
     });
-
     
-    
+    it('Apt 320-9820 boul Gouin O, PIERREFONDS, Quebec H8Y 3G7, Canada', function() {
+        var result = {};
+        try{ result=addresser.parseAddress("Apt 320-9820 boul Gouin O, PIERREFONDS, Quebec H8Y 3G7, Canada");} catch(er){console.error(er);}
+        expect(result.streetNumber).to.equal("9820");
+        expect(result.streetName).to.equal("Gouin");
+        expect(result.addressLine1).to.equal("9820 Boul Gouin O");
+        expect(result.city).to.equal("Pierrefonds");
+        expect(result.stateAbbreviation).to.equal("QC");
+        expect(result.zipCode).to.equal("H8Y 3G7");
+        expect(result.streetDirection).to.equal('O');
+    });
+    it('3260 rue du Chanoine Chamberland, Trois-Rivieres, Quebec G8Z 2T2, Canada', function() {
+        var result = {};
+        try{ result=addresser.parseAddress("3260 rue du Chanoine Chamberland, Trois-Rivieres, Quebec G8Z 2T2, Canada");} catch(er){console.error(er);}
+        expect(result.streetNumber).to.equal("3260");
+        expect(result.streetName).to.equal("rue du Chanoine Chamberland");
+        expect(result.addressLine1).to.equal("3260 rue du Chanoine Chamberland");
+        expect(result.city).to.equal("Trois-Rivieres");
+        expect(result.stateAbbreviation).to.equal("QC");
+        expect(result.zipCode).to.equal("G8Z 2T2");
+    });
     
     
     
