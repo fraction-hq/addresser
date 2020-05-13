@@ -350,14 +350,14 @@ addrsr={
 	 * 		{string} parsed parsed subPremise
 	 * 		{string} stripped original string, w/o subPremise
 	 */
-	getSubPremise: function(a,options) {
+	getSubPremise: function(address,options) {
 		if(!options) options={};
 		//remove subPremise from original address
 		//return parsed value
 		let _bndr = "(\\b|\\,|\\s)", _apt = [];
 		//prevent saints names from being parsed as "suite" like "Ste-Marie" which is "Sainte-Marie"
 		//really not clever, works for now as a quick fix, will work on that later
-		a=a.replace(/(ste)\-([a-z]{4,100})/i,'$1___SAINTE___$2');
+		var a=address.replace(/(ste)\-([a-z]{4,100})/i,'$1___SAINTE___$2');
 		var _c = [
 				//I dont know what it means but I had to manage for a customer
 				//RR 1 Comp 45 Site 19, 32 Willow Hill Est, Sundre, Alberta T0M 1X0, Canada
@@ -400,9 +400,29 @@ addrsr={
 
 		//once subPremise has been replaced
 		let out=a.replace(/[\s]+\,/g,',').trim().replace(/[\,]+/g,',').trim().replace(/^\,/g,'').trim();
-		out = addrsr.cleanString(out).replace(/^(\d+)\, /,'$1 '); //replace street number and street name comma "123, street name, city" to "123 street name, city"
+		out = addrsr.cleanString(out).replace(/^(\d+)\, /,'$1 '),
+		parsed=_apt.join(', ').replace(/(^[\,]+|[\,]+$)/,''); //replace street number and street name comma "123, street name, city" to "123 street name, city"
+
+		// if leftover has no number, we may have misparsed, fallback
+		if(/[0-9]+/.test(out.split(',')[0])==false){
+			if(/[\.|\-|\s]([0-9]+)$/.test(parsed)){
+				
+				let snmb=parsed.match(/(.*)[\.|\-|\s]([0-9]+)$/);
+				parsed=snmb[1];
+				out=snmb[2]+' '+out;
+			}
+			else
+			{
+				if(options.debug || options.verbose) console.warn('subPremise parsed, no number left in address 1st part "'+out.split(',')[0]+'", abort');
+				return {
+					parsed		: null,
+					stripped	: ''+address
+				};
+			}
+		}
+
 		return {
-			parsed: _apt.join(', ').replace(/(^[\,]+|[\,]+$)/,''),
+			parsed: parsed,
 			stripped: out
 		};
 	},
@@ -618,7 +638,7 @@ addrsr={
 			reStreet = XRegExp('\.\*\\b(?:' +
 				Object.keys(usStreetTypes).join('|') + ')\\b\\.?' +
 				'( +(?:' + usStreetDirectionalString + ')\\b)?', 'i'),
-			reStreetFR = XRegExp('(' +
+			reStreetFR = XRegExp('\.\*\\b(' +
 					Object.keys(usStreetTypes).join('|') + ')(\\.|)\\s([\\p{L}]+)\\s' +
 					'(' + usStreetDirectionalString + ')$', 'i'),
 			reAveLetter = XRegExp('\.\*\\b(av.?|ave.?|avenue)\.\*\\b\\p{L}\\b', 'i'),

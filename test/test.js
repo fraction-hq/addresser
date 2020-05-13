@@ -950,6 +950,16 @@ describe('#parseAddress', function() {
         expect(result.stateAbbreviation).to.equal("QC");
         expect(result.zipCode).to.equal("G8Z 2T2");
     });
+    it('Front street should not be parsed as subPremise', function() {
+        var result = {};
+        try{ result=addresser.parseAddress("76 Front St, Emo, Ontario P0W1E0, Canada");} catch(er){console.error(er);}
+        expect(result.streetNumber).to.equal("76");
+        expect(result.streetName).to.equal("Front");
+        expect(result.addressLine1).to.equal("76 Front St");
+        expect(result.city).to.equal("Emo");
+        expect(result.stateAbbreviation).to.equal("ON");
+        expect(result.zipCode).to.equal("P0W 1E0");
+    });
     
     
     
