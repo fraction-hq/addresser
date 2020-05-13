@@ -1,3 +1,18 @@
+//cli args
+var args={};
+
+if(process.argv && process.argv[1].indexOf('index.js')!=-1){
+	if(process.argv.length>2){
+		for(var i=2;i<process.argv.length;i++){
+			if(process.argv[i].indexOf('=')!=-1){
+				var s=process.argv[i].split('=');
+				args[s[0]]=s[1];
+			}
+			else
+				args[process.argv[i]]=true;
+		}
+	}
+}
 var allStates = require('./data/states.json');
 var usStreetTypes = require('./data/us-street-types.json');
 var allCities = require('./data/cities.json');
@@ -624,15 +639,19 @@ addrsr={
 				var streetParts = result.addressLine1.split(' ');
 				if(options.verbose) console.info('streetParts',streetParts)
 
-				// Assume type is last and number is first   
-				result.streetNumber = streetParts[0]; // Assume number is first element
+				// Assume type is last and number is first
+				let stnb_index=0;
+				if(streetParts[0].replace(/[^0-9]/,'') != ""){
+					result.streetNumber = streetParts[0]; // Assume number is first element
+					stnb_index=1;
+				}
 
 				// Normalize to Ave
 				streetParts[streetParts.length - 2] = streetParts[streetParts.length - 2].replace(/^(ave.?|avenue)$/i, 'Ave');
 
 				//result.streetSuffix = toTitleCase(usStreetTypes[streetParts[streetParts.length-1].toLowerCase()]);
-				result.streetName = streetParts[1]; // Assume street name is everything in the middle
-				for (var i = 2; i <= streetParts.length - 1; i++) {
+				result.streetName = streetParts[stnb_index]; // Assume street name is everything in the middle
+				for (var i = stnb_index+1; i <= streetParts.length - 1; i++) {
 					result.streetName = result.streetName + " " + streetParts[i];
 				}
 				result.streetName = toTitleCase(result.streetName);
@@ -645,10 +664,12 @@ addrsr={
 				let addln1;
 				if(reStreetFR.test(streetString)){
 					addln1=XRegExp.exec(streetString, reStreetFR);
+					if(options.verbose) console.info('streetString matches reStreetFR',addln1)
 					streetString = streetString.replace(reStreetFR, "").trim(); // Carve off the first address line
 				}
 				else{
 					addln1=XRegExp.exec(streetString, reStreet);
+					if(options.verbose) console.info('streetString matches reStreet',addln1)
 					streetString = streetString.replace(reStreet, "").trim(); // Carve off the first address line
 				}
 				result.addressLine1 = addln1[0];
@@ -662,8 +683,24 @@ addrsr={
 					}
 				}
 				var streetParts = result.addressLine1.split(' ');
-				if(options.verbose) console.info('streetParts',streetParts)
+				if(options.verbose) console.info('streetParts',streetParts,streetParts[0].replace(/[^0-9]/g,''))
 
+				// Assume type is last and number is first
+				let stnb_index=0;
+				if(streetParts[0].replace(/[^0-9]/g,'') != ""){
+					result.streetNumber = streetParts[0]; // Assume number is first element
+					stnb_index=1;
+				}
+
+				// if no space in street parts, split them "2021BearhillRd".replace(/^(\d+)([a-z]+)/i,'$1 $2');
+				// Assume type is last and number is first   
+				if((!result.streetNumber || result.streetNumber.replace(/[^0-9]/g,'') != result.streetNumber) && /[0-9]+(\.|\-|\s)[0-9]+$/.test(result.subPremise)){
+					//subPremise has been misparsed
+					let snmb=result.subPremise.match(/[\.|\-|\s]([0-9]+)$/);
+					streetParts.unshift(snmb[1]);
+					result.streetNumber=snmb[1];
+					result.subPremise=result.subPremise.replace(snmb[0],'');
+				}
 				// Check if directional is last element
 				var re = new RegExp('\.\*\\b(?:' + usStreetDirectionalString + ')$', 'i');
 				if (result.addressLine1.match(re)) {
@@ -674,22 +711,12 @@ addrsr={
 						console.warn(er.message,streetParts)
 					}
 				}
-				else if(usStreetDirectionalString.split('|').indexOf(streetParts[1].toUpperCase())!=-1){
-					result.streetDirection = streetParts.splice(1,1)+'';
+				else if(streetParts[stnb_index] && usStreetDirectionalString.split('|').indexOf(streetParts[stnb_index].toUpperCase())!=-1){
+					result.streetDirection = streetParts.splice(stnb_index,1)+'';
 					result.streetDirection = result.streetDirection.toUpperCase();
 				}
 				if(options.verbose) console.info('addressLine1',result.addressLine1)
 
-				// if no space in street parts, split them "2021BearhillRd".replace(/^(\d+)([a-z]+)/i,'$1 $2');
-				// Assume type is last and number is first   
-				result.streetNumber = streetParts[0]; // Assume number is first element
-				if(result.streetNumber.replace(/[^0-9]/,'') != result.streetNumber && /[0-9]+(\.|\-|\s)[0-9]+$/.test(result.subPremise)){
-					//subPremise has been misparsed
-					let snmb=result.subPremise.match(/[\.|\-|\s]([0-9]+)$/);
-					streetParts.unshift(snmb[1]);
-					result.streetNumber=snmb[1];
-					result.subPremise=result.subPremise.replace(snmb[0],'');
-				}
 				// If there are only 2 street parts (number and name) then its likely missing a "real" suffix and the street name just happened to match a suffix
 				if (streetParts.length > 2) {
 					// Remove '.' if it follows streetSuffix
@@ -708,7 +735,7 @@ addrsr={
 					result.streetName = result.streetName + " " + streetParts[i];
 				}
 				result.streetName = toTitleCase(result.streetName);
-				result.addressLine1 = [result.streetNumber,(result.streetPrefix || ''), result.streetName].join(" ").replace(/\s+/g,' ');
+				result.addressLine1 = [result.streetNumber,(result.streetPrefix || ''), result.streetName].filter(function(a){return a?true:false;}).join(" ").replace(/\s+/g,' ');
 
 				if (result.hasOwnProperty('streetSuffix') && result.streetSuffix) {
 					result.addressLine1 = result.addressLine1 + ' ' + result.streetSuffix;
@@ -783,4 +810,8 @@ addrsr={
 		return (usCities);
 	}
 };
+
+
+if(args.address) console.log(JSON.stringify(addrsr.parseAddress(args.address,args)));
+else
 module.exports = addrsr;

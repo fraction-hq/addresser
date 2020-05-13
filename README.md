@@ -9,6 +9,11 @@ A Node.js library for parsing property addresses. Also includes other address ut
 
 ## Usage
 
+    cli:
+      node index.js address="Your Address Here" verbose=1
+    
+    as a module:
+
     var addresser = require('addresser');
     
     addresser.parseAddress(address [,options]);
