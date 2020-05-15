@@ -372,7 +372,8 @@ addrsr={
 				// building A, Suite 1, STE A-1, apt 3A, apt #3 and so on
 				// 580 Hespeler Rd building d, Cambridge, ON N1R 6J8, Canada
 				// 10120 SW NIMBUS AVE STE C-2, GLB-JOKERJY, PORTLAND, Oregon 97223-4336, US
-			[XRegExp(_bndr + "(" + Object.keys(usLine2Prefixes).join('|').replace('|#','|\\#') + ")([\\,|\\.|\\#|\\:|\\s|\\-]+)(\\d|\\-|[\\p{L}])*" + _bndr, 'i'), ''],
+				// make sure not to match Northwest territories with (?![a-z]+)
+			[XRegExp(_bndr + "(" + Object.keys(usLine2Prefixes).join('|').replace('|#','|\\#') + ")(?![a-z]+)([\\,|\\.|\\#|\\:|\\s|\\-]+|)([\\d|\\-|\\p{L}]+)" + _bndr, 'i'), ''],
 
 			 	// 9390 Boulevard des Sciences #3A, Anjou, QC H1J 3C7, Canada
 			[XRegExp(" \\#(\s+|)(\\d)+(\-|)([\\p{L}]|)" + _bndr, 'i'), ''],
@@ -389,6 +390,7 @@ addrsr={
 			if (_c[i][0].test(a)) {
 				if(options.verbose) console.info('subPremise match rule #'+i);
 				let _aptM = XRegExp.exec(a,_c[i][0]);
+				//console.log(_aptM)
 				_apt.push(_aptM[0].trim());
 				a = XRegExp.replace(a,_c[i][0], _c[i][1]).trim();
 			}
@@ -416,7 +418,7 @@ addrsr={
 				if(options.debug || options.verbose) console.warn('subPremise parsed, no number left in address 1st part "'+out.split(',')[0]+'", abort');
 				return {
 					parsed		: null,
-					stripped	: ''+address
+					stripped	: parsed+' '+out
 				};
 			}
 		}
@@ -433,7 +435,7 @@ addrsr={
 			throw 'Argument must be a non-empty string.';
 		}
 		if(options.verbose) console.info('INPUT RECEIVED:',input);
-		address = addrsr.cleanString(input).replace(/^(\d+)\, /,'$1 '); //replace street number and street name comma "123, street name, city" to "123 street name, city"
+		address = addrsr.cleanString(input).replace(/^(\d+)\,(\s|)([a-z0-9\-\.\'\s_]+)(\,|\#)/i,'$1 $3$4'); //replace street number and street name comma "123, street name, city" to "123 street name, city"
     	address=address.replace(/\, Newfoundland ([A-Z]\d[A-Z])/i,', NL $1'); // because partial province name
     	address=address.replace(/\, (Bronx|Manhattan|Queens)(\,|) (\d{5})/i,', New York, NY $3'); // because Bronx is not a state, ny is
 		if(options.verbose) console.info('address pre parsed:',address);
@@ -639,10 +641,10 @@ addrsr={
 				Object.keys(usStreetTypes).join('|') + ')\\b\\.?' +
 				'( +(?:' + usStreetDirectionalString + ')\\b)?', 'i'),
 			reStreetFR = XRegExp('\.\*\\b(' +
-					Object.keys(usStreetTypes).join('|') + ')(\\.|)\\s([\\p{L}]+)\\s' +
-					'(' + usStreetDirectionalString + ')$', 'i'),
+					Object.keys(usStreetTypes).join('|') + ')(\\.|)\\s([\\p{L}|_|\\-|\\\']+)(\\s|)' +
+					'(' + usStreetDirectionalString + '|)$', 'i'),
 			reAveLetter = XRegExp('\.\*\\b(av.?|ave.?|avenue)\.\*\\b\\p{L}\\b', 'i'),
-			reNoSuffix = XRegExp('\\b\\d+\\s[\\p{L}0-9_\\-\\. ]+\\b', 'i');
+			reNoSuffix = XRegExp('\\b\\d+\\s[\\p{L}0-9_\\-\\.\\s\\\']+\\b', 'i');
 			if (reAveLetter.test(streetString)) {
 				result.addressLine1 = XRegExp.exec(streetString, reAveLetter)[0];//streetString.match(reAveLetter)[0];
 				streetString = streetString.replace(reAveLetter, "").trim(); // Carve off the first address line

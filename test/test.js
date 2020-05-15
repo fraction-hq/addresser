@@ -928,8 +928,28 @@ describe('#parseAddress', function() {
         expect(result.stateAbbreviation).to.equal("CA");
         expect(result.zipCode).to.equal("95652");
     });
+    it('Front street should not be parsed as subPremise', function() {
+        var result = {};
+        try{ result=addresser.parseAddress("76 Front St, Emo, Ontario P0W1E0, Canada");} catch(er){console.error(er);}
+        expect(result.streetNumber).to.equal("76");
+        expect(result.streetName).to.equal("Front");
+        expect(result.addressLine1).to.equal("76 Front St");
+        expect(result.city).to.equal("Emo");
+        expect(result.stateAbbreviation).to.equal("ON");
+        expect(result.zipCode).to.equal("P0W 1E0");
+    });
+    it('Should parse address contain apostrophe \'', function() {
+        var result = {};
+        try{ result=addresser.parseAddress("249,Montee de l'Eglise, St-Colomban, Quebec J5K 2H8, Canada");} catch(er){console.error(er);}
+        expect(result.streetNumber).to.equal("249");
+        expect(result.streetName).to.equal("Montee de l'Eglise");
+        expect(result.addressLine1).to.equal("249 Montee de l'Eglise");
+        expect(result.city).to.equal("St-Colomban");
+        expect(result.stateAbbreviation).to.equal("QC");
+        expect(result.zipCode).to.equal("J5K 2H8");
+    });
     
-    it('Apt 320-9820 boul Gouin O, PIERREFONDS, Quebec H8Y 3G7, Canada', function() {
+    it('Extra: Apt 320-9820 boul Gouin O, PIERREFONDS, Quebec H8Y 3G7, Canada', function() {
         var result = {};
         try{ result=addresser.parseAddress("Apt 320-9820 boul Gouin O, PIERREFONDS, Quebec H8Y 3G7, Canada");} catch(er){console.error(er);}
         expect(result.streetNumber).to.equal("9820");
@@ -940,7 +960,7 @@ describe('#parseAddress', function() {
         expect(result.zipCode).to.equal("H8Y 3G7");
         expect(result.streetDirection).to.equal('O');
     });
-    it('3260 rue du Chanoine Chamberland, Trois-Rivieres, Quebec G8Z 2T2, Canada', function() {
+    it('Extra: 3260 rue du Chanoine Chamberland, Trois-Rivieres, Quebec G8Z 2T2, Canada', function() {
         var result = {};
         try{ result=addresser.parseAddress("3260 rue du Chanoine Chamberland, Trois-Rivieres, Quebec G8Z 2T2, Canada");} catch(er){console.error(er);}
         expect(result.streetNumber).to.equal("3260");
@@ -949,16 +969,6 @@ describe('#parseAddress', function() {
         expect(result.city).to.equal("Trois-Rivieres");
         expect(result.stateAbbreviation).to.equal("QC");
         expect(result.zipCode).to.equal("G8Z 2T2");
-    });
-    it('Front street should not be parsed as subPremise', function() {
-        var result = {};
-        try{ result=addresser.parseAddress("76 Front St, Emo, Ontario P0W1E0, Canada");} catch(er){console.error(er);}
-        expect(result.streetNumber).to.equal("76");
-        expect(result.streetName).to.equal("Front");
-        expect(result.addressLine1).to.equal("76 Front St");
-        expect(result.city).to.equal("Emo");
-        expect(result.stateAbbreviation).to.equal("ON");
-        expect(result.zipCode).to.equal("P0W 1E0");
     });
     
     
