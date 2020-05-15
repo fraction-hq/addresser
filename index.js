@@ -135,7 +135,7 @@ usLine2Prefixes = {
 	'SUITE'        : 'STE',
 	'TRAILER'      : 'TRLR',
 	'TRLR'         : 'TRLR',
-	'UNIT'         : 'UNIT',
+	'UNIT(e|é|ée|ee|)'  : 'UNIT', //unit, unite (french)
 	'UPPER'        : 'UPPR',
 	'UPPR'         : 'UPPR',
 	'#'			       : '#',
