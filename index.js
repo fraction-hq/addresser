@@ -20,7 +20,7 @@ var caStates = require('./data/ca-states.json');
 var usStates = require('./data/us-states.json');
 var usCities = require('./data/us-cities.json');
 const XRegExp = require('xregexp');
-const ENTITTIES = require('html-entities').AllHtmlEntities;
+const ENTITTIES = require('html-entities');
 const diacritics = require('./data/diacritics.js');
 
 'use strict';
