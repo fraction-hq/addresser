@@ -19,10 +19,10 @@ var allCities = require('./data/cities.json');
 var caStates = require('./data/ca-states.json');
 var usStates = require('./data/us-states.json');
 var usCities = require('./data/us-cities.json');
-const XRegExp = require('xregexp');
+var XRegExp = require('xregexp');
 try{
-	if(XRegExp.XRegExp) XRegExp=XRegExp.XRegExp; //preserve compatibility
-} catch(e){};
+	if(XRegExp.XRegExp && typeof XRegExp.XRegExp=='function') XRegExp=XRegExp.XRegExp; //preserve compatibility
+} catch(e){console.warn(e.message)};
 const ENTITTIES = require('html-entities');
 const diacritics = require('./data/diacritics.js');
 
