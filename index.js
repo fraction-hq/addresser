@@ -72,14 +72,14 @@ var usStreetDirectional = {
 },
 canPostalCodeFirst = {
 	A	: 'NL', //	Newfoundland and Labrador
-	B	: 'NS', //	Nova Scotia	
-	C	: 'PE', //	Prince Edward Island	
-	E	: 'NB', //	New Brunswick	
+	B	: 'NS', //	Nova Scotia
+	C	: 'PE', //	Prince Edward Island
+	E	: 'NB', //	New Brunswick
 	G	: 'QC', //	Eastern Québec
-	H	: 'QC', //	Metropolitan Montréal	
-	J	: 'QC', //	Western Québec	
-	K	: 'ON', //	Eastern Ontario	
-	L	: 'ON', //	Central Ontario	
+	H	: 'QC', //	Metropolitan Montréal
+	J	: 'QC', //	Western Québec
+	K	: 'ON', //	Eastern Ontario
+	L	: 'ON', //	Central Ontario
 	M	: 'ON', //	Metropolitan Toronto
 	N	: 'ON', //	Southwestern Ontario
 	P	: 'ON', //	Northern Ontario
@@ -184,7 +184,7 @@ entities={
 		if(typeof dat=='string'){ //remove unicode characters
 			var r = /\\u([\d\w]{4})/gi;
 			dat = dat.replace(r, function (match, grp) {
-				return String.fromCharCode(parseInt(grp, 16)); 
+				return String.fromCharCode(parseInt(grp, 16));
 			});
 			return diacritics.remove(entities.decode(dat)); //convert html entities to accents, then accents to letters
 		}
@@ -226,7 +226,7 @@ addrsr={
       return a.replace(/\s+/g,' ').trim();
     };
     input=_doTrim(entities.removeAccents(input.trim()).replace(/(\\n|\n)/g,', ').replace(/\$/g,''));
-    
+
     let _toReplace=[
 		['\n', ', '],
 		['\\', '/'],
@@ -265,7 +265,7 @@ addrsr={
     //} catch(er){
     //  console.warn('Error parsing place stuff',er.message,'at line',er.line || er.lineNumber,input)
     //}
-    
+
     try{
       //match "Walmart City Name Supercentre 1234"
       let walmart=input.match(/(^|\,)(\s|)Walmart [^0-9]+ (Supercentre|Store) [\d]+\,/i);
@@ -311,9 +311,9 @@ addrsr={
     }
   },
 	/**
-	 * 
+	 *
 	 * @param {string} a address string
-	 * @returns {object} 
+	 * @returns {object}
 	 * 		{string} parsed parsed po box
 	 * 		{string} stripped original string, w/o po box
 	 */
@@ -347,9 +347,9 @@ addrsr={
     return null;
   },
 	/**
-	 * 
+	 *
 	 * @param {string} a address string
-	 * @returns {object} 
+	 * @returns {object}
 	 * 		{string} parsed parsed subPremise
 	 * 		{string} stripped original string, w/o subPremise
 	 */
@@ -371,7 +371,7 @@ addrsr={
 
 				// 2nd floor, 3rd floor, 4e étage, 15 floor, 15th floor, 15 th floor etc
 			[XRegExp(_bndr + "([\\d]+)(\s+|)(st|nd|rd|th|e|ieme|er|eme|) (" + Object.keys(usLine2Prefixes).join('|').replace('|#','') + ")" + _bndr, 'i'), ''],
- 
+
 				// building A, Suite 1, STE A-1, apt 3A, apt #3 and so on
 				// 580 Hespeler Rd building d, Cambridge, ON N1R 6J8, Canada
 				// 10120 SW NIMBUS AVE STE C-2, GLB-JOKERJY, PORTLAND, Oregon 97223-4336, US
@@ -411,7 +411,7 @@ addrsr={
 		// if leftover has no number, we may have misparsed, fallback
 		if(/[0-9]+/.test(out.split(',')[0])==false){
 			if(/[\.|\-|\s]([0-9]+)$/.test(parsed)){
-				
+
 				let snmb=parsed.match(/(.*)[\.|\-|\s]([0-9]+)$/);
 				parsed=snmb[1];
 				out=snmb[2]+' '+out;
@@ -503,7 +503,7 @@ addrsr={
 			stateString = stateString.substring(0, stateString.length - result.zipCode.length).trim();
 			if(options.verbose) console.info('stateString match \\b[A-Z]\\d[A-Z]\\b:','"'+result.zipCode+'"',stateString);
     	}
-    
+
 		// Parse and remove state
 		if (stateString.length > 0) { // Check if anything is left of last section
 			addressParts[addressParts.length - 1] = stateString.trim();
@@ -562,7 +562,7 @@ addrsr={
 						stateString=''+element;
 						result.countryCode='US';
 						result.country='United States';
-		
+
 						result.city = element;
 						if(options.verbose) console.info('found city and state from "allCities.CA":','"'+element+'"');
 						return element; // Found a winner - stop looking for cities
@@ -639,7 +639,7 @@ addrsr={
 			}
 			if(options.verbose) console.info('streetString',streetString)
 			//Assume street address comes first and the rest is secondary address
-			var 
+			var
 			reStreet = XRegExp('\.\*\\b(?:' +
 				Object.keys(usStreetTypes).join('|') + ')\\b\\.?' +
 				'( +(?:' + usStreetDirectionalString + ')\\b)?', 'i'),
@@ -718,7 +718,7 @@ addrsr={
 				}
 
 				// if no space in street parts, split them "2021BearhillRd".replace(/^(\d+)([a-z]+)/i,'$1 $2');
-				// Assume type is last and number is first   
+				// Assume type is last and number is first
 				if((!result.streetNumber || result.streetNumber.replace(/[^0-9]/g,'') != result.streetNumber) && /[0-9]+(\.|\-|\s)[0-9]+$/.test(result.subPremise)){
 					//subPremise has been misparsed
 					let snmb=result.subPremise.match(/[\.|\-|\s]([0-9]+)$/);
@@ -788,7 +788,7 @@ addrsr={
 				var streetParts = result.addressLine1.split(' ');
 				if(options.verbose) console.info('streetParts',streetParts)
 
-				// Assume type is last and number is first   
+				// Assume type is last and number is first
 				result.streetNumber = streetParts[0]; // Assume number is first element
 				streetParts.shift(); // Remove the first element
 				result.streetName = streetParts.join(' '); // Assume street name is everything else
@@ -805,7 +805,7 @@ addrsr={
 			result.addressLine2=(result.addressLine2?result.addressLine2+', ':'')+result.subPremise;
 			result.subPremise=result.subPremise.replace('#','').trim();
 		}
-		
+
 		if(!result.addressLine1 && result.addressLine2){
 			result.addressLine1=''+result.addressLine2;
 			delete result.addressLine2;
@@ -833,6 +833,10 @@ addrsr={
 
 	cities: function() {
 		return (usCities);
+	},
+
+	streetTypes: function() {
+		return usStreetTypes;
 	}
 };
 
