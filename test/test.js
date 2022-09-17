@@ -4,6 +4,22 @@ var expect = require('chai').expect;
 var addresser = require('../index');
 
 describe('#parseAddress', function() {
+    it('should parse Union Bay', function() {
+        var result = {};
+        try{ result=addresser.parseAddress("276 Richards Street, Union Bay, BC, V0R 3B0");} catch(er){console.error(er);}
+        console.log(result);
+        expect(result.streetNumber).to.equal("276");
+        expect(result.streetName).to.equal("Richards");
+        expect(result.streetSuffix).to.equal("St");
+        expect(result.hasOwnProperty("streetDirection")).to.equal(false);
+        expect(result.addressLine1).to.equal("276 Richards St");
+        expect(result.hasOwnProperty("addressLine2")).to.equal(false);
+        expect(result.city).to.equal("Union Bay");
+        expect(result.stateAbbreviation).to.equal("BC");
+        expect(result.stateName).to.equal("British-Columbia");
+        expect(result.zipCode).to.equal("V0R 3B0");
+        expect(result.hasOwnProperty("zipCodePlusFour")).to.equal(false);
+    });
     it('should parse a simple address', function() {
         var result = {};
         try{ result=addresser.parseAddress("123 Main St, Conway, SC");} catch(er){console.error(er);}
@@ -437,11 +453,11 @@ describe('#parseAddress', function() {
         expect(result.zipCode).to.equal("K0L 2G0");
     });
 
-    
-    
-    
 
-    
+
+
+
+
 
     it('should parse an address with a PO BOX written as P.O. DRAWER', function() {
         var result = {};
@@ -464,7 +480,7 @@ describe('#parseAddress', function() {
         expect(result.addressLine1).to.equal("PO BOX 538");
         expect(result.id).to.equal('PO-BOX-538-Basile-LA-70515');
     });
-    
+
     it('should provide an id for a valid address with second address line', function() {
         var result = {};
         try{ result=addresser.parseAddress("123 Main St Unit 101, Conway, SC 29526");} catch(er){console.error(er);}
@@ -472,7 +488,7 @@ describe('#parseAddress', function() {
         expect(result.addressLine2).to.equal("Unit 101");
         expect(result.id).to.equal('123-Main-St-Unit-101-Conway-SC-29526');
     });
-    
+
     it('should not provide an id if mandatory components are not present', function() {
         var result = {};
         try{ result=addresser.parseAddress("1010 PINE, 9E-6-01\nST. LOUIS MO");} catch(er){console.error(er);}
@@ -503,7 +519,7 @@ describe('#parseAddress', function() {
         expect(result.zipCode).to.equal("78660");
         expect(result.hasOwnProperty("zipCodePlusFour")).to.equal(false);
     });
-    
+
     it('should parse a street address with "Ave C" style street name', function() {
         var result = {};
         try{ result=addresser.parseAddress("826 N Ave C, Crowley, LA 70526");} catch(er){console.error(er);}
@@ -532,7 +548,7 @@ describe('#parseAddress', function() {
         expect(result.zipCode).to.equal("70526");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse a street address with "Ave. b" style street name', function() {
         var result = {};
         try{ result=addresser.parseAddress("826 N Ave. b, Crowley, LA 70526");} catch(er){console.error(er);}
@@ -547,7 +563,7 @@ describe('#parseAddress', function() {
         expect(result.zipCode).to.equal("70526");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse a street address with "Ave. b" style street name with non delimited second address line', function() {
         var result = {};
         try{ result=addresser.parseAddress("826 N Ave. b Unit 101, Crowley, LA 70526");} catch(er){console.error(er);}
@@ -562,7 +578,7 @@ describe('#parseAddress', function() {
         expect(result.zipCode).to.equal("70526");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse a street address without a normal suffix like 123 Texas Gold', function() {
         var result = {};
         try{ result=addresser.parseAddress("12939 Texas Gold, San Antonio, TX 78253");} catch(er){console.error(er);}
@@ -577,7 +593,7 @@ describe('#parseAddress', function() {
         expect(result.zipCode).to.equal('78253');
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse a street address without a normal suffix and 2nd address line like 123 Texas Gold Unit 101', function() {
         var result = {};
         try{ result=addresser.parseAddress("12939 Texas Gold Unit 101, San Antonio, TX 78253");} catch(er){console.error(er);}
@@ -592,7 +608,7 @@ describe('#parseAddress', function() {
         expect(result.zipCode).to.equal('78253');
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse an Interstate address with a # unit', function() {
         var result = {};
         try{ result=addresser.parseAddress("10701 S Interstate 35 # 36, Austin, TX");} catch(er){console.error(er);}
@@ -604,10 +620,10 @@ describe('#parseAddress', function() {
         expect(result.city).to.equal("Austin");
         expect(result.stateAbbreviation).to.equal("TX");
         expect(result.stateName).to.equal("Texas");
-        expect(result).to.not.have.property("zipCode");        
+        expect(result).to.not.have.property("zipCode");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse FM number style road names', function() {
         var result = {};
         try{ result=addresser.parseAddress("11434 W FM 471, San Antonio, TX");} catch(er){console.error(er);}
@@ -615,14 +631,14 @@ describe('#parseAddress', function() {
         expect(result.streetName).to.equal("W FM 471");
         expect(result).to.not.have.property('streetSuffix')
         expect(result.addressLine1).to.equal("11434 W FM 471");
-        expect(result).to.not.have.property("addressLine2");        
+        expect(result).to.not.have.property("addressLine2");
         expect(result.city).to.equal("San Antonio");
         expect(result.stateAbbreviation).to.equal("TX");
         expect(result.stateName).to.equal("Texas");
-        expect(result).to.not.have.property("zipCode");        
+        expect(result).to.not.have.property("zipCode");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse street name ending in Oak', function() {
         var result = {};
         try{ result=addresser.parseAddress("24330 Invitation Oak, San Antonio, TX");} catch(er){console.error(er);}
@@ -630,14 +646,14 @@ describe('#parseAddress', function() {
         expect(result.streetName).to.equal("Invitation Oak");
         expect(result).to.not.have.property('streetSuffix')
         expect(result.addressLine1).to.equal("24330 Invitation Oak");
-        expect(result).to.not.have.property("addressLine2");        
+        expect(result).to.not.have.property("addressLine2");
         expect(result.city).to.equal("San Antonio");
         expect(result.stateAbbreviation).to.equal("TX");
         expect(result.stateName).to.equal("Texas");
-        expect(result).to.not.have.property("zipCode");        
+        expect(result).to.not.have.property("zipCode");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse street name thats just a number', function() {
         var result = {};
         try{ result=addresser.parseAddress("506 W 1100, Chesterton, IN");} catch(er){console.error(er);}
@@ -645,11 +661,11 @@ describe('#parseAddress', function() {
         expect(result.streetName).to.equal("W 1100");
         expect(result).to.not.have.property('streetSuffix')
         expect(result.addressLine1).to.equal("506 W 1100");
-        expect(result).to.not.have.property("addressLine2");        
+        expect(result).to.not.have.property("addressLine2");
         expect(result.city).to.equal("Chesterton");
         expect(result.stateAbbreviation).to.equal("IN");
         expect(result.stateName).to.equal("Indiana");
-        expect(result).to.not.have.property("zipCode");        
+        expect(result).to.not.have.property("zipCode");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
 
@@ -660,14 +676,14 @@ describe('#parseAddress', function() {
         expect(result.streetName).to.equal("Longbranch Run");
         expect(result).to.not.have.property('streetSuffix')
         expect(result.addressLine1).to.equal("25403 Longbranch Run");
-        expect(result).to.not.have.property("addressLine2");        
+        expect(result).to.not.have.property("addressLine2");
         expect(result.city).to.equal("San Antonio");
         expect(result.stateAbbreviation).to.equal("TX");
         expect(result.stateName).to.equal("Texas");
-        expect(result).to.not.have.property("zipCode");        
+        expect(result).to.not.have.property("zipCode");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse street name that ends in Chase', function() {
         var result = {};
         try{ result=addresser.parseAddress("22923 Cardigan Chase, San Antonio, TX");} catch(er){console.error(er);}
@@ -675,14 +691,14 @@ describe('#parseAddress', function() {
         expect(result.streetName).to.equal("Cardigan Chase");
         expect(result).to.not.have.property('streetSuffix')
         expect(result.addressLine1).to.equal("22923 Cardigan Chase");
-        expect(result).to.not.have.property("addressLine2");        
+        expect(result).to.not.have.property("addressLine2");
         expect(result.city).to.equal("San Antonio");
         expect(result.stateAbbreviation).to.equal("TX");
         expect(result.stateName).to.equal("Texas");
-        expect(result).to.not.have.property("zipCode");        
+        expect(result).to.not.have.property("zipCode");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse street name that ends in Day', function() {
         var result = {};
         try{ result=addresser.parseAddress("7114 Sunny Day, San Antonio, TX");} catch(er){console.error(er);}
@@ -690,14 +706,14 @@ describe('#parseAddress', function() {
         expect(result.streetName).to.equal("Sunny Day");
         expect(result).to.not.have.property('streetSuffix')
         expect(result.addressLine1).to.equal("7114 Sunny Day");
-        expect(result).to.not.have.property("addressLine2");        
+        expect(result).to.not.have.property("addressLine2");
         expect(result.city).to.equal("San Antonio");
         expect(result.stateAbbreviation).to.equal("TX");
         expect(result.stateName).to.equal("Texas");
-        expect(result).to.not.have.property("zipCode");        
+        expect(result).to.not.have.property("zipCode");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse street name that has a leading directional and is just a number', function() {
         var result = {};
         try{ result=addresser.parseAddress("110 N 2500, Vernal, UT");} catch(er){console.error(er);}
@@ -705,14 +721,14 @@ describe('#parseAddress', function() {
         expect(result.streetName).to.equal("N 2500");
         expect(result).to.not.have.property('streetSuffix')
         expect(result.addressLine1).to.equal("110 N 2500");
-        expect(result).to.not.have.property("addressLine2");        
+        expect(result).to.not.have.property("addressLine2");
         expect(result.city).to.equal("Vernal");
         expect(result.stateAbbreviation).to.equal("UT");
         expect(result.stateName).to.equal("Utah");
-        expect(result).to.not.have.property("zipCode");        
+        expect(result).to.not.have.property("zipCode");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse "123 Rue Dauphine style address', function() {
         var result = {};
         try{ result=addresser.parseAddress("625 Rue Dauphine, Eunice, LA");} catch(er){console.error(er);}
@@ -720,14 +736,14 @@ describe('#parseAddress', function() {
         expect(result.streetName).to.equal("Rue Dauphine");
         expect(result).to.not.have.property('streetSuffix')
         expect(result.addressLine1).to.equal("625 Rue Dauphine");
-        expect(result).to.not.have.property("addressLine2");        
+        expect(result).to.not.have.property("addressLine2");
         expect(result.city).to.equal("Eunice");
         expect(result.stateAbbreviation).to.equal("LA");
         expect(result.stateName).to.equal("Louisiana");
-        expect(result).to.not.have.property("zipCode");        
+        expect(result).to.not.have.property("zipCode");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse street name of N Portola with unit name', function() {
         var result = {};
         try{ result=addresser.parseAddress("47 N Portola, # 35, Laguna Beach, CA");} catch(er){console.error(er);}
@@ -739,10 +755,10 @@ describe('#parseAddress', function() {
         expect(result.city).to.equal("Laguna Beach");
         expect(result.stateAbbreviation).to.equal("CA");
         expect(result.stateName).to.equal("California");
-        expect(result).to.not.have.property("zipCode");        
+        expect(result).to.not.have.property("zipCode");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse a street name with no suffix but the street name itself matches a suffix', function() {
         var result = {};
         try{ result=addresser.parseAddress("1010 PINE, 9E-6-01\nST. LOUIS MO 63101");} catch(er){console.error(er);}
@@ -757,7 +773,7 @@ describe('#parseAddress', function() {
         expect(result.zipCode).to.equal("63101");
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should return a formattedAddress field', function() {
         var result = {};
         try{ result=addresser.parseAddress("12939 Texas Gold, San Antonio, TX 78253");} catch(er){console.error(er);}
@@ -773,7 +789,7 @@ describe('#parseAddress', function() {
         expect(result.zipCode).to.equal('78253');
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should return a formattedAddress field when a second address line is provided', function() {
         var result = {};
         try{ result=addresser.parseAddress("12939 Live Oak Street Unit 101, San Antonio, TX 78253");} catch(er){console.error(er);}
@@ -789,7 +805,7 @@ describe('#parseAddress', function() {
         expect(result.zipCode).to.equal('78253');
         expect(result).to.not.have.property("zipCodePlusFour");
     });
-    
+
     it('should parse a simple Canadian Address without zip Code', function() {
         var result = {};
         try{ result=addresser.parseAddress("123 Main St, Toronto, ON");} catch(er){console.error(er);}
@@ -805,7 +821,7 @@ describe('#parseAddress', function() {
         expect(result.hasOwnProperty("zipCode")).to.equal(false);
         expect(result.hasOwnProperty("zipCodePlusFour")).to.equal(false);
     });
-    
+
     it('should parse a simple Canadian Address with zip Code', function() {
         var result = {};
         try{ result=addresser.parseAddress("123 Main St, Toronto, ON M3K5K9");} catch(er){console.error(er);}
@@ -948,10 +964,11 @@ describe('#parseAddress', function() {
         expect(result.stateAbbreviation).to.equal("QC");
         expect(result.zipCode).to.equal("J5K 2H8");
     });
-    
+
     it('Extra: Apt 320-9820 boul Gouin O, PIERREFONDS, Quebec H8Y 3G7, Canada', function() {
         var result = {};
-        try{ result=addresser.parseAddress("Apt 320-9820 boul Gouin O, PIERREFONDS, Quebec H8Y 3G7, Canada");} catch(er){console.error(er);}
+        try{ result=addresser.parseAddress("Apt 320-9820 boul Gouin O, PIERREFONDS, Quebec H8Y 3G7, Canada", { verbose: true });} catch(er){console.error(er);}
+        console.log(result)
         expect(result.streetNumber).to.equal("9820");
         expect(result.streetName).to.equal("Gouin");
         expect(result.addressLine1).to.equal("9820 Boul Gouin O");
@@ -970,15 +987,15 @@ describe('#parseAddress', function() {
         expect(result.stateAbbreviation).to.equal("QC");
         expect(result.zipCode).to.equal("G8Z 2T2");
     });
-    
-    
-    
-    
+
+
+
+
 });
 
 describe('#randomCity', function() {
     it('should provide a random city', function() {
-        for (var i = 0; i < 20; i++) { 
+        for (var i = 0; i < 20; i++) {
             var result=addresser.randomCity();
             expect(result.hasOwnProperty("city")).to.equal(true);
             expect(result['city'].length).to.be.above(1);

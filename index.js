@@ -97,7 +97,7 @@ usLine2Prefixes = {
   'APP'          : 'APT', // french for apt
 	'APT'          : 'APT',
 	'BASEMENT'     : 'BSMT',
-	'BAY'		   : 'BAY',
+	// 'BAY'		   : 'BAY',
 	'BSMT'         : 'BSMT',
 	'BLDG'         : 'BLDG',
 	'BUILDING'     : 'BLDG',
@@ -504,6 +504,9 @@ addrsr={
 			if(options.verbose) console.info('stateString match \\b[A-Z]\\d[A-Z]\\b:','"'+result.zipCode+'"',stateString);
     	}
 
+		if(options.verbose) console.info('countryCode:',result.countryCode);
+		if(options.verbose) console.info('stateString:',stateString);
+
 		// Parse and remove state
 		if (stateString.length > 0) { // Check if anything is left of last section
 			addressParts[addressParts.length - 1] = stateString.trim();
@@ -511,7 +514,10 @@ addrsr={
 			addressParts.splice(-1, 1);
 			stateString = addressParts[addressParts.length - 1].trim();
 		}
+
 		if(options.verbose) console.info('stateString:',stateString);
+		if(options.verbose) console.info('addressParts:',addressParts);
+
 		// First check for just an Abbreviation
 		let _doCheckState=function(){
 			if (stateString.length == 2 && getKeyByValue(allStates, stateString.toUpperCase())) {
@@ -587,6 +593,7 @@ addrsr={
 		}
 		result.city = "";
 		if(options.verbose) console.info('cityString:',cityString);
+		if (options.verbose) console.log('stateAbbreviation:',result.stateAbbreviation);
 		allCities[result.stateAbbreviation].some(function(element) {
 			var re = new RegExp(element + "$", "i");
 			if (cityString.match(re)) {
